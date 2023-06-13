@@ -10,7 +10,7 @@
 #define K 10
 #define STEPS 1000
 #define RUNS 2000
-#define EPS 0.1 /* Exploratory value */
+#define EPS 0.01 /* Exploratory value */
 
 
 int main (void) {
@@ -45,15 +45,13 @@ int main (void) {
     for (size_t t = 0; t < STEPS; t++) {
       /* Iterate through available actions */
       for (size_t a = 0; a < K; a++) {
-        /* Reward for this action */
+        /* Generate all rewards */
         randn(q[a], 1, &R[a][t], 1);
-        if (t > 0) {
-          /* Estimate value function */
-          if (a == At) { /* Increment if a was last action taken */
-            Qn[a] += R[a][t-1]; /* Q(a) numerator, sum of rewards for this action */
-            Q[a] = Qn[a]/(double)(++Ai[a]); /* ++Ai[a] tracks sum of times action a was taken */
-          }
-        }
+      }
+      if (t > 0) {
+        /* Estimate value function */
+        Qn[At] += R[At][t-1]; /* Q(a) numerator, sum of rewards for this action */
+        Q[At] = Qn[At]/(double)(++Ai[At]); /* ++Ai[a] tracks sum of times action a was taken */
       }
       if (t != 0 && rand() > EPS*(double)RAND_MAX) {
         /* Exploit */
