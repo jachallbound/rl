@@ -1,5 +1,7 @@
 # rl
-Going through *Reinforcement Learning - An Introduction* by Sutton and Barto
+Going through *Reinforcement Learning - An Introduction* by Sutton and Barto.
+
+Completion is doubtful.
 
 ## Quick Start
 Move into each folder and run the following to build each script and run it:
