@@ -20,7 +20,7 @@ int main (void) {
   double q[K]; /* q*(a) - true value function */
   double Q[K]; /* Q(a) - estimate value function */
   double Qn[K]; /* estimate value function numerator */
-  double R[K][STEPS]; /* All rewards, for insight */
+  double R; /* Reward value */
   double Rt[STEPS]; /* Reward based on chosen action at each time step */
   double Rr[STEPS]; for(size_t i = 0; i < STEPS; i++) Rr[i] = 0;/* Average reward across runs */
   size_t At = 0; /* Action to take each step */
@@ -33,7 +33,7 @@ int main (void) {
     /* Initialize/reset values */
     /* Generate random q(a) */
     randn(0, 1, q, K);
-    /* Set arrays to zero */
+    /* Set other arrays to zero */
     for (size_t i = 0; i < K; i++) {
       Q[i] = 0.0;
       Qn[i] = 0.0;
@@ -43,14 +43,12 @@ int main (void) {
 
     /* Training steps */
     for (size_t t = 0; t < STEPS; t++) {
-      /* Iterate through available actions */
-      for (size_t a = 0; a < K; a++) {
-        /* Generate all rewards */
-        randn(q[a], 1, &R[a][t], 1);
-      }
+      /* First step (t = 0), always explore. Then start calculating value function */
       if (t > 0) {
+        /* Generate reward of previous action */
+        randn(q[At], 1, &R, 1);
         /* Estimate value function */
-        Qn[At] += R[At][t-1]; /* Q(a) numerator, sum of rewards for this action */
+        Qn[At] += R; /* Q(a) numerator, sum of rewards for this action */
         Q[At] = Qn[At]/(double)(++Ai[At]); /* ++Ai[a] tracks sum of times action a was taken */
       }
       if (t != 0 && rand() > EPS*(double)RAND_MAX) {
@@ -62,7 +60,7 @@ int main (void) {
         At = rand()%K;
         explorations++;
       }
-      Rt[t] = R[At][t]; /* Reward for this run */
+      Rt[t] = R; /* Reward for this run */
       Rr[t] += Rt[t]; /* Sum reward over all runs */
     }
   }
