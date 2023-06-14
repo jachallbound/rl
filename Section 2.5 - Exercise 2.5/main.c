@@ -40,7 +40,7 @@ int main (void) {
     randn(0, 1, q, K);
     #else
     randn(0, 1, &M, 1);
-    for (size_t i = 0; i < K; i++) q[i] = M;
+    for (size_t i = 0; i < K; i++) q[i] = 0;
     #endif
     
     /* Set other arrays to zero */
@@ -64,9 +64,9 @@ int main (void) {
         /* Estimate value function */
         /* 2.4 - Incremental Implementation, reduced memory computation */
         #if SAMPLE_AVERAGE
-        Q[A] = Q[A] + (R - Q[A])/(double)(++n[A]); /* Equ (2.3) */
+        Q[A] = Q[A] + (R - Q[A])/(double)(++n[A]); /* Equ (2.3), sample average */
         #else
-        Q[A] = Q[A] + (R - Q[A])*ALPHA; /* Equ (2.5) */
+        Q[A] = Q[A] + (R - Q[A])*ALPHA; /* Equ (2.5), weighted average */
         #endif
       }
 
@@ -86,11 +86,12 @@ int main (void) {
 
   /* Lazily change save file name based on epsilon */
   FILE* f2;
-  if (EPS == 0.01) f2 = fopen("Rr_0.01.dat", "w");
-  else if (EPS == 0.1) f2 = fopen("Rr_0.1.dat", "w");
-  else if (EPS == 0.0) f2 = fopen("Rr_greedy.dat", "w");
-  else f2 = fopen("Rr.dat", "w");
-  
+  #if SAMPLE_AVERAGE
+  f2 = fopen("Rr_sample.dat", "w");
+  #else
+  f2 = fopen("Rr_weighted.dat", "w");
+  #endif
+
   /* Average summed rewards and save to file */
   for (size_t t = 0; t < STEPS; t++) {
     Rr[t] /= RUNS; 

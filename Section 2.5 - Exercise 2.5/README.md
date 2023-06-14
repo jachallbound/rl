@@ -1,9 +1,6 @@
-# Section 2.3 - The 10-armed Testbed
-Implementation of a k-armed bandit.
+# Section 2.5 - Nonstationary Comparison
+Building on k-armed bandit from 2.3, implement Exercise 2.5 to train two bandits on a nonstationary problem and compare sample average vs. weighted average.
 
-Figure 2.2 on Page 29 can be recreated by running the program three times with `EPS` definitions: 0.0, 0.01, 0.1
-
-After running the main program three times, run the `graph_2.3.sh` bash script to plot results with `graph` from GNU plot utils.
-Results match Figure 2.2:
+Run main program for SAMPLE_AVERAGE: 0,1. Then run `graph_2.5.sh` to graph results (now using `gnuplot`):
 
 ![](graph.png)
