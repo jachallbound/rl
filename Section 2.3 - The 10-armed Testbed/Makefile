@@ -9,7 +9,7 @@ SRC=$(wildcard *.c)
 OBJ=$(patsubst %.c, %.o, $(SRC))
 
 all: $(OBJ)
-	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJ)
+	$(CC) -o $(PROGRAM) $(OBJ) $(LDFLAGS)
 
 %.o:%.c
 	$(CC) $(WFLAGS) $(STDFLAGS) $(CFLAGS) -c $< $(PFLAGS)

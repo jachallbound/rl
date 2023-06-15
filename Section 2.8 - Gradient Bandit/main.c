@@ -33,8 +33,6 @@ int main (void) {
   size_t A = 0; /* Action to take each step */
   double R = 0; /* Reward value */
   size_t O = 0; /* Optimal action */
-  size_t exploitations = 0; /* Number times exploited */
-  size_t explorations = 0; /* Number times explored */
   double M = 0; /* non-stationary initial mean */
   double d = 0; /* denominator */
   
@@ -119,6 +117,5 @@ int main (void) {
   }
   fclose(f2);
 
-  printf("Exploitations: %zu, Explorations: %zu\n", exploitations, explorations);
   return 0;
 }
