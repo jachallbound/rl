@@ -28,9 +28,11 @@ int main (void) {
   size_t n[K]; /* Numbers of times each action taken */
   double S[K]; /* non-stationary random steps */
   double Rr[STEPS]; for(size_t i = 0; i < STEPS; i++) Rr[i] = 0;/* Average reward across runs */
+  double Ar[STEPS]; for(size_t i = 0; i < STEPS; i++) Ar[i] = 0;/* Optimal action percent across runs */
   /* Values */
   size_t A = 0; /* Action to take each step */
   double R = 0; /* Reward value */
+  size_t O = 0; /* Optimal action */
   size_t exploitations = 0; /* Number times exploited */
   size_t explorations = 0; /* Number times explored */
   double M = 0; /* non-stationary initial mean */
@@ -47,6 +49,9 @@ int main (void) {
     randn(0, 1, &M, 1);
     for (size_t i = 0; i < K; i++) q[i] = 0;
     #endif
+
+    /* Index of optimal action */
+    O = argmax(q, K);
     
     /* Set other arrays to zero */
     for (size_t i = 0; i < K; i++) {
@@ -92,7 +97,9 @@ int main (void) {
       }
       // printf("\n");
 
+      /* Log performance */
       Rr[t] += R; /* Sum reward over all runs */
+      if (A == O) Ar[t]++;
     }
     // return 0;
   }
@@ -105,11 +112,10 @@ int main (void) {
   f2 = fopen("Rr_weighted.dat", "w");
   #endif
 
-  /* Average summed rewards and save to file */
+  /* Average over runs and save to file */
   for (size_t t = 0; t < STEPS; t++) {
-    Rr[t] /= RUNS; 
-    // fprintf(f2, "%zu %g\n", t, Rr[t]);
-    fprintf(f2, "%g\n", Rr[t]);
+    Ar[t] /= RUNS; 
+    fprintf(f2, "%g\n", Ar[t]);
   }
   fclose(f2);
 
