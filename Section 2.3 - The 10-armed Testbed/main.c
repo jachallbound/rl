@@ -10,7 +10,7 @@
 #define K 10
 #define STEPS 1000
 #define RUNS 2000
-#define EPS 0.01 /* Exploratory value */
+#define EPS 0.0 /* Exploratory value */
 
 
 int main (void) {
