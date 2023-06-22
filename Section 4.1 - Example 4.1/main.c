@@ -46,6 +46,11 @@ int main (void) {
   draw_gridworld(S, N);
 
   /* Policy, start equiprobable */
+  /* Policy: 0 = up, 1 = down, 2 = right, 3 = left */
+  double pi[N][4];
+  for (size_t i = 0; i < N; i++)
+    for (size_t ii = 0; ii < 4; ii++)
+      pi[i][ii] = 0.25;
 
   /* Loop: begin training or quit */
   while(1) {
