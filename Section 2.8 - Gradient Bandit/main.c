@@ -87,19 +87,14 @@ int main (void) {
       /* H(t+1) */
       /**********/
       /* Update policy */
-      // printf("A: %zu ", A);
       for (size_t a = 0; a < K; a++) {
         if (a == A) H[a] += ALPHA*(R - Ravg[a])*(1 - pi[a]);
         else H[a] -= ALPHA*(R-Ravg[a])*pi[a];
-        // printf("H[%zu]=%0.2f, ", a, H[a]);
       }
-      // printf("\n");
-
       /* Log performance */
       Rr[t] += R; /* Sum reward over all runs */
       if (A == O) Ar[t]++;
     }
-    // return 0;
   }
 
   /* Lazily change save file name based on epsilon */
