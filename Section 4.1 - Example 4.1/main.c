@@ -6,17 +6,11 @@
 
 #include "ltqnorm.h"
 #include "functions.h"
+#include "mdp_gridworld.h"
 
 /* Declarations */
-/* Structures */
-typedef struct pos {
-  int x;
-  int y;
-} pos;
 
 /* Functions */
-void draw(char c);
-void draw_gridworld(pos* S, size_t N);
 
 /* Macros */
 
@@ -24,9 +18,6 @@ void draw_gridworld(pos* S, size_t N);
 /* Main */
 int main (void) {
   /* Set random seed */
-  srand(time(NULL));
-
-  /*** CURSES ***/
   WINDOW* wnd = initscr(); /* curses call to initialize window */
   cbreak(); /* curses call to set no waiting for Enter key */
   noecho(); /* curses call to set no echoing */
@@ -35,9 +26,11 @@ int main (void) {
   /*** END CURSES ***/
 
   /* Arrays */
-  size_t N = 16; /* Number of states */
+  size_t h = 4, w = 4; /* height and width of gridworld */
+  size_t N = h*w; /* Number of states */
   size_t K = 4; /* Number of actions */
   pos S[N]; /* States, as x,y positions */
+  pos A[K]; /* Posible actions, how x,y will change */
   double R[N]; /* Rewards */
   double pi[N][K]; /* Stochastic policy */
   double H[N][K]; /* Policy preferences */
@@ -46,11 +39,18 @@ int main (void) {
   /* Initializations */
   /* Set of states saved to array */
   for (size_t i = 0; i < N; i++) {
-    S[i].x = i%K; /* Translate index to grid coordinates */
-    S[i].y = i/K;
+    S[i].x = i%w; /* Translate index to grid coordinates */
+    S[i].y = i/h;
   }
   /* Draw gridworld from array of states */
   draw_gridworld(S, N);
+
+  /* Actions */
+  /* Actions: 0 = up, 1 = down, 2 = right, 3 = left */
+  A[0].x = 0; A[0].y = -1;
+  A[1].x = 0; A[1].y = 1;
+  A[2].x = 1; A[2].y = 0;
+  A[3].x = -1; A[3].y = 0;
 
   /* Rewards */
   for (size_t i = 1; i < (N-1); i++) R[i] = -1;
@@ -72,9 +72,9 @@ int main (void) {
   V[N-1] = 0;
 
   /* First state and action (needed?) */
-  int s = (rand()%(N-3))+1; /* Random first state, 1-14 */
-  int sp = s; /* Next state */
-  int a = rand()%3; /* Random first action */
+  //int s = (rand()%(N-3))+1; /* Random first state, 1-14 */
+  int sp = 0; /* Next state */
+  //int a = rand()%3; /* Random first action */
 
   /************/
   /* Training */
@@ -82,48 +82,45 @@ int main (void) {
   double dv = 0; /* delta V, return increase */
   double E = 0.1; /* epsilon, threshold of return increase */
   double g = 0.7; /* gamma, discounted return */
+  double evaluation = 0; /* sum of policy for each state */
+  double mdp = 0; /* mdp dynamics summation */
 
+  /* Testing variables */
+  size_t ss = 12;
+  int a = 1;
+
+  /* Training loop */
   while(1) {
     char c = getch();
     if (c == 'q') break; /* Quit */
+    else if (c == ' ') {
+      /* Code testing */
+      move_gridworld(S[ss]);
+      refresh();
+      c = getch();
+      ss = next_state_gw(S[ss], A[a], h, w);
+      move_gridworld(S[ss]);
+      refresh();
+    }
     else { /* Start training */
       /* Policy Evaluation */
       dv = 0;
       do {
-        for (size_t i = 1; i < (N-1); i++) {
-          v[i] = V[i];
-          V[i] = (R[s] + g*V[sp]); /* MDP dynamics equation */
-          dv = (dv > fabs(v[i] - V[i]) ? dv : fabs(v[i] - V[i]));
+        for (size_t s = 1; s < (N-1); s++) {
+          /* Calculate summations */
+          evaluation = 0;
+          for (size_t a = 0; a < K; a++) {
+            mdp = mdp_dynamics_gw(s, a, S, A, R, h, w);
+            evaluation += pi[s][a];
+          }
+          v[s] = V[s]; /* Store old state-value */
+          V[s] = (R[s] + g*V[sp]); /* MDP dynamics equation */
+          dv = (dv > fabs(v[s] - V[s]) ? dv : fabs(v[s] - V[s])); /* Update state-value improvement */
         }
-      } while(dv > E);
+      } while(dv > E); /* Break when update less than margin */
     }
   }
 
   endwin();
   return 0;
-}
-
-/* Functions */
-void draw(char c) {
-  delch();
-  insch(c);
-  return;
-}
-
-void draw_gridworld(pos* S, size_t N) {
-  /* Draw gridworld from array of states */
-  for (size_t i = 0; i < N; i++) {
-    if (i < 10) {
-      move(S[i].y, S[i].x*3+1);
-      draw(48+i);
-    } else {
-      move(S[i].y, S[i].x*3);
-      draw(48+1);
-      move(S[i].y, S[i].x*3+1);
-      draw(48+i-10);
-    }
-    refresh();
-  }
-  move(3,12);
-  return;
 }
