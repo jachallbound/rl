@@ -95,6 +95,8 @@ int main (void) {
     else { /* Start training */
       /* Policy Evaluation */
       do {
+        clear();
+        draw_gridworld(S, N);
         dv = 0; /* Reset evaluation */
         for (size_t s = 1; s < (N-1); s++) {
           /* Calculate summations */
@@ -107,12 +109,17 @@ int main (void) {
           V[s] = Vsum; /* V(s) <- MDP dynamics */
           dv = (dv > fabs(v[s] - V[s]) ? dv : fabs(v[s] - V[s])); /* Update state-value improvement */
           /* Print status */
-          sprintf(str, "fabs(v[%zu] - V[%zu]) = %0.2g, dv = %g\n", s, s, fabs(v[s] - V[s]), dv);
+          sprintf(str, " fabs(v[%zu] - V[%zu]) = %0.2g, dv = %0.2g\n", s, s, fabs(v[s] - V[s]), dv);
           winsnstr(wnd, str, 64);
+          /* Print value in grid */
+          move_gridworld(S[s]);
+          sprintf(str, "%0.2g", V[s]);
+          winsnstr(wnd, str, 64);
+          move(6,28);
           getch();
         }
       } while(dv > E); /* Break when update less than margin */
-      winsnstr(wnd, "Done evaluating\n", 64);
+      winsnstr(wnd, " Done evaluating\n", 64);
       getch();
       break;
 
