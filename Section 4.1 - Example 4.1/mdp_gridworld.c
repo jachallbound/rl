@@ -1,26 +1,20 @@
 #include "mdp_gridworld.h"
 
-/* Markov Decision Process */
-double mdp_dynamics_gw(size_t s, size_t a, pos* S, pos* A, double* R, size_t h, size_t w) {
-  double mdp = 0;
-  pos Ss = S[s];
-  pos Aa = A[a];
-  size_t sp = next_state_gw(Ss, Aa, h, w);
-
-
-  return mdp;
-}
-
-
+/* Calculate index of next state based on action taken */
 size_t next_state_gw(pos Ss, pos Aa, size_t h, size_t w) {
   size_t sp = 0;
   pos Sp = {.x = Ss.x + Aa.x,
             .y = Ss.y + Aa.y};
-  Sp.x = (Sp.x > (w-1) ? (w-1) : Sp.x);
-  Sp.y = (Sp.y > (h-1) ? (h-1) : Sp.y);
-  sp = Sp.x + Sp.y*w;
+  /* Prevent Overflow */
+  Sp.x = (Sp.x > ((int)w-1) ? ((int)w-1) : Sp.x);
+  Sp.y = (Sp.y > ((int)h-1) ? ((int)h-1) : Sp.y);
+  /* Prevent Underflow */
+  Sp.x = (Sp.x < 0 ? 0 : Sp.x);
+  Sp.y = (Sp.y < 0 ? 0 : Sp.y);
+  sp = Sp.x + Sp.y*(int)w;
   return sp;
 }
+
 
 
 /* Gridworld in curses */

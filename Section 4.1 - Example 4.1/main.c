@@ -30,18 +30,22 @@ int main (void) {
   size_t N = h*w; /* Number of states */
   size_t K = 4; /* Number of actions */
   pos S[N]; /* States, as x,y positions */
+  int Sn[N]; /* Number of possible next states give current state */
   pos A[K]; /* Posible actions, how x,y will change */
   double R[N]; /* Rewards */
   double pi[N][K]; /* Stochastic policy */
   double H[N][K]; /* Policy preferences */
   double v[N], V[N]; /* State-value functions */
 
+  /*******************/
   /* Initializations */
+  /*******************/
   /* Set of states saved to array */
   for (size_t i = 0; i < N; i++) {
     S[i].x = i%w; /* Translate index to grid coordinates */
     S[i].y = i/h;
   }
+
   /* Draw gridworld from array of states */
   draw_gridworld(S, N);
 
@@ -71,56 +75,77 @@ int main (void) {
   V[0] = 0; /* Terminal states are 0 */
   V[N-1] = 0;
 
-  /* First state and action (needed?) */
-  //int s = (rand()%(N-3))+1; /* Random first state, 1-14 */
-  int sp = 0; /* Next state */
-  //int a = rand()%3; /* Random first action */
-
   /************/
   /* Training */
   /************/
   double dv = 0; /* delta V, return increase */
   double E = 0.1; /* epsilon, threshold of return increase */
   double g = 0.7; /* gamma, discounted return */
-  double evaluation = 0; /* sum of policy for each state */
+  double Vsum = 0; /* sum of policy for each state */
   double mdp = 0; /* mdp dynamics summation */
-
-  /* Testing variables */
-  size_t ss = 12;
-  int a = 1;
+  size_t sn = 0; /* next-state */
+  bool policy_stable = true; /* decision for policy improvement */
+  char str[64]; /* string for displaying messages */
 
   /* Training loop */
   while(1) {
     char c = getch();
     if (c == 'q') break; /* Quit */
-    else if (c == ' ') {
-      /* Code testing */
-      move_gridworld(S[ss]);
-      refresh();
-      c = getch();
-      ss = next_state_gw(S[ss], A[a], h, w);
-      move_gridworld(S[ss]);
-      refresh();
-    }
+
     else { /* Start training */
       /* Policy Evaluation */
-      dv = 0;
       do {
+        dv = 0; /* Reset evaluation */
         for (size_t s = 1; s < (N-1); s++) {
           /* Calculate summations */
-          evaluation = 0;
+          v[s] = V[s]; /* Store old state-value: v <- V(s) */
+          Vsum = 0;
           for (size_t a = 0; a < K; a++) {
-            mdp = mdp_dynamics_gw(s, a, S, A, R, h, w);
-            evaluation += pi[s][a];
+            size_t sn = next_state_gw(S[s], A[a], h, w); /* Possible next states */
+            Vsum += pi[s][a]*(R[sn] + g*V[sn]); /* MDP dynamics: p(sn,r|s,pi(a)) */
           }
-          v[s] = V[s]; /* Store old state-value */
-          V[s] = (R[s] + g*V[sp]); /* MDP dynamics equation */
+          V[s] = Vsum; /* V(s) <- MDP dynamics */
           dv = (dv > fabs(v[s] - V[s]) ? dv : fabs(v[s] - V[s])); /* Update state-value improvement */
+          /* Print status */
+          sprintf(str, "fabs(v[%zu] - V[%zu]) = %0.2g, dv = %g\n", s, s, fabs(v[s] - V[s]), dv);
+          winsnstr(wnd, str, 64);
+          getch();
         }
       } while(dv > E); /* Break when update less than margin */
+      winsnstr(wnd, "Done evaluating\n", 64);
+      getch();
+      break;
+
+      /* Policy Improvement */
+      // do {
+      //   for (size_t s = 1; s < (N-1); s++) {
+
+      //   }
+      // } while (!policy_stable);
     }
   }
 
   endwin();
   return 0;
 }
+
+          // sprintf(str, "v[s] = %0.2g, V[s] = %0.2g\n", v[s], V[s]);
+          // winsnstr(wnd, str, 64);
+          // getch();
+
+          // mdp = mdp_dynamics_gw(s, a, S, A, R, h, w);
+          // V[s] = (R[s] + g*V[sn]); /* MDP dynamics equation */
+/* Code Testing */
+
+  // /* Testing variables */
+  // size_t ss = 3;
+  // int aa = 1;
+    // else if (c == ' ') {
+    //   /* Code testing */
+    //   move_gridworld(S[ss]);
+    //   refresh();
+    //   c = getch();
+    //   ss = next_state_gw(S[ss], A[aa], h, w);
+    //   move_gridworld(S[ss]);
+    //   refresh();
+    // }
