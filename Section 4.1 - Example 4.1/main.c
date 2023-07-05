@@ -32,7 +32,7 @@ int main (void) {
   pos A[K]; /* Posible actions, how x,y will change */
   double R[N]; /* Rewards */
   double pi[N][K]; /* Stochastic policy */
-  size_t pi_A[K]; /* policy improvement */
+  double pi_A[K]; /* policy improvement */
   double Hs[N][K]; /* Policy preferences */
   double v[N], V[N]; /* State-value functions */
   double q[N][K]; /* Action-value function */
@@ -83,10 +83,10 @@ int main (void) {
   /* Training */
   /************/
   double dv = 0; /* delta V, return increase */
-  double E = 0.1; /* theta, threshold of return increase */
+  double E = 0.5; /* theta, threshold of return increase */
   double g = 0.7; /* gamma, discounted return */
   double Vsum = 0; /* sum of policy for each state */
-  bool policy_stable = true; /* decision for policy improvement */
+  int policy_stable = 0; /* decision for policy improvement */
   char str[STR_LEN]; /* string for displaying messages */
   size_t a_new = 0;
 
@@ -110,13 +110,16 @@ int main (void) {
           for (size_t s = 1; s < (N-1); s++) { /* Loop over all states */
             /* Update V(s) */
             v[s] = V[s]; /* Store old state-value: v <- V(s) */
-            Vsum = 0;
-            for (size_t a = 0; a < K; a++) {
-              size_t sn = next_state_gw(S[s], A[a]); /* Calculate index of next state */
-              q[s][a] = pi[s][a]*(R[s] + g*V[sn]); /* MDP dynamics: p(sn,r|s,pi(s)) */
-              Vsum += q[s][a]; /* state-value is sum of action-values? */
-            }
-            V[s] = Vsum; /* V(s) <- MDP dynamics */
+            size_t a = random_decision(pi[s], K);
+            size_t sn = next_state_gw(S[s], A[a]); /* Calculate index of next state */
+            V[s] = (R[sn] + g*V[sn]); /* MDP dynamics: p(sn,r|s,pi(s)) */
+            //Vsum = 0;
+            //for (size_t a = 0; a < K; a++) {
+            //  size_t sn = next_state_gw(S[s], A[a]); /* Calculate index of next state */
+            //  q[s][a] = pi[s][a]*(R[sn] + g*V[sn]); /* MDP dynamics: p(sn,r|s,pi(s)) */
+            //  Vsum += q[s][a]; /* state-value is sum of action-values? */
+            //}
+            //V[s] = Vsum; /* V(s) <- MDP dynamics */
             dv = (dv > fabs(v[s] - V[s]) ? dv : fabs(v[s] - V[s])); /* Update state-value improvement */
 
             /* Print value in grid */
@@ -124,26 +127,33 @@ int main (void) {
             sprintf(str, "%0.2g", V[s]);
             winsnstr(wnd, str, STR_LEN);
           }
+          //getch();
         } while(dv > E); /* Break when update less than margin */
         move((H-1)*H_scale,(W)*W_scale);
         winsnstr(wnd, "  Done evaluating\n", STR_LEN);
         getch();
 
         /* Policy Improvement */
-        policy_stable = true;
+        policy_stable = 0;
         for (size_t s = 1; s < (N-1); s++) {
-          size_t a_old = argmax(pi[s], K);
+          /* Old decision */
+          size_t a_old = random_decision(pi[s], K);
           /* Update policy */
-          softmax(pi[s], q[s], K);
+          for (size_t a = 0; a < K; a++) {
+            size_t sn = next_state_gw(S[s], A[a]); /* Calculate index of next state */
+            pi_A[a] = pi[s][a]*(R[sn] + g*V[sn]);
+          }
+          /* Softmax of update */
+          softmax(pi[s], pi_A, K);
           /* Get a_new from updated policy */
-          a_new = argmax(pi[s], K);
+          a_new = random_decision(pi[s], K);
           /* Check policy */
-          policy_stable = ((policy_stable && (a_old == a_new)) ? true : false);
+          if (a_old == a_new) policy_stable++;
 
           /* Display results */
           move((H-1)*H_scale,(W)*W_scale);
-          sprintf(str, "   q[%zu][%d] = %0.2g,  q[%zu][%d] = %0.2g,  q[%zu][%d] = %0.2g,  q[%zu][%d] = %0.2g\n",
-                  s, 0, q[s][0], s, 1, q[s][1], s, 2, q[s][2], s, 3, q[s][3]);
+          sprintf(str, "   pi_A[%d] = %0.2g,  pi_A[%d] = %0.2g,  pi_A[%d] = %0.2g,  pi_A[%d] = %0.2g\n",
+                  0, pi_A[0], 1, pi_A[1], 2, pi_A[2],  3, pi_A[3]);
           winsnstr(wnd, str, STR_LEN);
 
           move((H-1)*H_scale+1,(W)*W_scale);
@@ -152,15 +162,13 @@ int main (void) {
           winsnstr(wnd, str, STR_LEN);
 
           move((H-1)*H_scale+2,(W)*W_scale);
-          sprintf(str, "   Policy stable? %d\n", policy_stable);
+          sprintf(str, "   a_old = %zu, a_new = %zu, Policy stable? %d\n", a_old, a_new, policy_stable);
           winsnstr(wnd, str, STR_LEN);
 
           move_gridworld(S[s]);
           getch();
         }
-        
-      } while (!policy_stable);
-      
+      } while (policy_stable < N - 1);
       break;
     }
   }
