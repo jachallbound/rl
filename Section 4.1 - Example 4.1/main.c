@@ -31,11 +31,8 @@ int main (void) {
   pos S[N]; /* States, as x,y positions */
   pos A[K]; /* Posible actions, how x,y will change */
   double R[N]; /* Rewards */
-  double pi[N][K]; /* Stochastic policy */
-  double pi_A[K]; /* policy improvement */
-  double Hs[N][K]; /* Policy preferences */
   double v[N], V[N]; /* State-value functions */
-  double q[N][K]; /* Action-value function */
+  double Va[K]; for(size_t i = 0; i < K; i++) Va[i] = 0; /* state-value for each action */
 
   /*******************/
   /* Initializations */
@@ -67,11 +64,6 @@ int main (void) {
     /* Initialize arrays */
     v[i] = 0;
     V[i] = 0;
-
-    for (size_t ii = 0; ii < K; ii++) {
-      pi[i][ii] = 0.25;
-      q[i][ii] = 0;
-    }
   }
 
   /* State-value function */
@@ -86,9 +78,7 @@ int main (void) {
   double E = 0.5; /* theta, threshold of return increase */
   double g = 0.7; /* gamma, discounted return */
   double Vsum = 0; /* sum of policy for each state */
-  int policy_stable = 0; /* decision for policy improvement */
   char str[STR_LEN]; /* string for displaying messages */
-  size_t a_new = 0;
 
   /* Training loop */
   while(1) {
@@ -96,79 +86,82 @@ int main (void) {
     if (c == 'q') break; /* Quit */
 
     else { /* Start training */
+      /* Policy Evaluation */
       do {
-        /* Policy Evaluation */
-        do {
-          /* Redraw gridworld */
-          clear();
-          draw_gridworld(S, N);
-          move(0,(W)*W_scale+4);
-          winsnstr(wnd, "0 = UP, 1 = DOWN, 2 = RIGHT, 3 = LEFT", STR_LEN);
-          move((H-1)*H_scale,(W)*W_scale);
-
-          dv = 0; /* Reset evaluation */
-          for (size_t s = 1; s < (N-1); s++) { /* Loop over all states */
-            /* Update V(s) */
-            v[s] = V[s]; /* Store old state-value: v <- V(s) */
-            size_t a = random_decision(pi[s], K);
-            size_t sn = next_state_gw(S[s], A[a]); /* Calculate index of next state */
-            V[s] = (R[sn] + g*V[sn]); /* MDP dynamics: p(sn,r|s,pi(s)) */
-            //Vsum = 0;
-            //for (size_t a = 0; a < K; a++) {
-            //  size_t sn = next_state_gw(S[s], A[a]); /* Calculate index of next state */
-            //  q[s][a] = pi[s][a]*(R[sn] + g*V[sn]); /* MDP dynamics: p(sn,r|s,pi(s)) */
-            //  Vsum += q[s][a]; /* state-value is sum of action-values? */
-            //}
-            //V[s] = Vsum; /* V(s) <- MDP dynamics */
-            dv = (dv > fabs(v[s] - V[s]) ? dv : fabs(v[s] - V[s])); /* Update state-value improvement */
-
-            /* Print value in grid */
-            move_gridworld(S[s]);
-            sprintf(str, "%0.2g", V[s]);
-            winsnstr(wnd, str, STR_LEN);
-          }
-          //getch();
-        } while(dv > E); /* Break when update less than margin */
+        /* Redraw gridworld */
+        clear();
+        draw_gridworld(S, N);
+        move(0,(W)*W_scale+4);
+        winsnstr(wnd, "0 = UP, 1 = DOWN, 2 = RIGHT, 3 = LEFT", STR_LEN);
         move((H-1)*H_scale,(W)*W_scale);
-        winsnstr(wnd, "  Done evaluating\n", STR_LEN);
+
+        dv = 0; /* Reset evaluation */
+        for (size_t s = 1; s < (N-1); s++) { /* Loop over all states */
+          /* Update V(s) */
+          v[s] = V[s]; /* Store old state-value: v <- V(s) */
+          Vsum = 0;
+          for (size_t a = 0; a < K; a++) { /* Loop over next states (actions) */
+            size_t sn = next_state_gw(S[s], A[a]); /* Calculate next state */
+            /* MDP dynamics: pi(a|s) = 0.25 (equiprobable), p(sn,r|s,a) = 1.0 */
+            Vsum += 0.25*(R[sn] + g*V[sn]);
+          }
+          V[s] = Vsum;
+          dv = (dv > fabs(v[s] - V[s]) ? dv : fabs(v[s] - V[s])); /* Update state-value improvement */
+          /* Print value in grid */
+          move_gridworld(S[s]);
+          sprintf(str, "%0.2g", V[s]);
+          winsnstr(wnd, str, STR_LEN);
+        }
+        getch();
+      } while(dv > E); /* Break when update less than margin */
+      move((H-1)*H_scale,(W)*W_scale);
+      winsnstr(wnd, "  Done evaluating\n", STR_LEN);
+      getch();
+
+      /* Test policy for every state */
+      size_t a = 0, ss = 0;
+      for (size_t s = 1; s < (N-1); s++) {
+        /* Display in gridworld */
+        move((H-1)*H_scale,(W)*W_scale);
+        sprintf(str, "  Starting in state: %zu\n", s);
+        winsnstr(wnd, str, STR_LEN);
+        move((H-1)*H_scale+3,(W)*W_scale);
+        sprintf(str, "\n");
+        winsnstr(wnd, str, STR_LEN);
+
+        ss = s;
+        move_gridworld(S[ss]); /* move cursor */
         getch();
 
-        /* Policy Improvement */
-        policy_stable = 0;
-        for (size_t s = 1; s < (N-1); s++) {
-          /* Old decision */
-          size_t a_old = random_decision(pi[s], K);
-          /* Update policy */
-          for (size_t a = 0; a < K; a++) {
-            size_t sn = next_state_gw(S[s], A[a]); /* Calculate index of next state */
-            pi_A[a] = pi[s][a]*(R[sn] + g*V[sn]);
+        do { /* take actions until in 0 or N-1 */
+          for (a = 0; a < K; a++) { /* greedy search for best action */
+            Va[a] = V[next_state_gw(S[ss], A[a])];
           }
-          /* Softmax of update */
-          softmax(pi[s], pi_A, K);
-          /* Get a_new from updated policy */
-          a_new = random_decision(pi[s], K);
-          /* Check policy */
-          if (a_old == a_new) policy_stable++;
-
-          /* Display results */
-          move((H-1)*H_scale,(W)*W_scale);
-          sprintf(str, "   pi_A[%d] = %0.2g,  pi_A[%d] = %0.2g,  pi_A[%d] = %0.2g,  pi_A[%d] = %0.2g\n",
-                  0, pi_A[0], 1, pi_A[1], 2, pi_A[2],  3, pi_A[3]);
-          winsnstr(wnd, str, STR_LEN);
-
+          a = argmax(Va, K);
+          ss = next_state_gw(S[ss], A[a]); /* choose argmax a */
+          
+          /* Display in gridworld */
           move((H-1)*H_scale+1,(W)*W_scale);
-          sprintf(str, "   p[%zu][%d] = %0.2g,  p[%zu][%d] = %0.2g,  p[%zu][%d] = %0.2g,  p[%zu][%d] = %0.2g\n",
-                  s, 0, pi[s][0], s, 1, pi[s][1], s, 2, pi[s][2], s, 3, pi[s][3]);
+          sprintf(str, "  State: %zu, V[a=%d] = %0.2g, V[a=%d] = %0.2g, V[a=%d] = %0.2g, V[a=%d] = %0.2g\n",
+                  ss, 0, Va[0], 1, Va[1], 2, Va[2], 3, Va[3]);
           winsnstr(wnd, str, STR_LEN);
-
           move((H-1)*H_scale+2,(W)*W_scale);
-          sprintf(str, "   a_old = %zu, a_new = %zu, Policy stable? %d\n", a_old, a_new, policy_stable);
+          sprintf(str, "  Took action: %zu\n", a);
           winsnstr(wnd, str, STR_LEN);
-
-          move_gridworld(S[s]);
+          move_gridworld(S[ss]); /* move cursor */
           getch();
-        }
-      } while (policy_stable < N - 1);
+        } while (ss != 0 && ss != N-1);
+        /* Display in gridworld */
+        move((H-1)*H_scale+3,(W)*W_scale);
+        sprintf(str, "  Reached terminal position: %zu!\n", ss);
+        winsnstr(wnd, str, STR_LEN);
+        move_gridworld(S[ss]);
+        getch();
+      }
+      move((H-1)*H_scale-2,(W)*W_scale);
+      sprintf(str, "  PRESS ANY BUTTON TO QUIT\n");
+      winsnstr(wnd, str, STR_LEN);
+      getch();
       break;
     }
   }
@@ -176,29 +169,3 @@ int main (void) {
   endwin();
   return 0;
 }
-
-
-            
-            // /* Action probability, of previous H */
-            // softmax(pi, H, K);
-
-            // /* Pick previous action, based on previous H */
-            // A = (t > 0 ? random_decision(pi, K) : (size_t)rand()%K);
-
-            // /* Generate reward of previous action */
-            // randn(q[A], 1, &R, 1);
-
-/* Code Testing */
-
-  // /* Testing variables */
-  // size_t ss = 3;
-  // int aa = 1;
-    // else if (c == ' ') {
-    //   /* Code testing */
-    //   move_gridworld(S[ss]);
-    //   refresh();
-    //   c = getch();
-    //   ss = next_state_gw(S[ss], A[aa], h, w);
-    //   move_gridworld(S[ss]);
-    //   refresh();
-    // }
