@@ -1,4 +1,4 @@
-# Chapter 4 - Policy Evaluation in Gridworld (Example 4.1)
+# Section 4.1 - Example 4.1 Gridworld (Policy Evaluation)
 
 ## Implementation
 Performs policy *evaluation* only. Policy *improvement* remains elusive. Uses threshold theta = 0.5, and discounted return gamma = 0.7.

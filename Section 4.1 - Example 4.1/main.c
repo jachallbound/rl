@@ -18,6 +18,9 @@
 /* Main */
 int main (void) {
   /* Set random seed */
+  srand(time(NULL));
+
+  /*** BEGIN CURSES ***/
   WINDOW* wnd = initscr(); /* curses call to initialize window */
   cbreak(); /* curses call to set no waiting for Enter key */
   noecho(); /* curses call to set no echoing */
