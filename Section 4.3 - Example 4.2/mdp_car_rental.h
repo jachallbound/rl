@@ -18,7 +18,7 @@ typedef struct pos {
 
 /* MDP */
 pos car_policy(int a);
-size_t next_state(pos Ss, pos Aa);
+int next_state(pos Ss, pos Aa);
 
 /* Draw in curses */
 void draw(char c);

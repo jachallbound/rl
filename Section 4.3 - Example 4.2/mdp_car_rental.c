@@ -18,8 +18,8 @@ pos car_policy(int a) {
 }
 
 /* Calculate index of next state based on action taken */
-size_t next_state(pos Ss, pos Aa) {
-  size_t sp = 0;
+int next_state(pos Ss, pos Aa) {
+  int sp = 0;
   pos Sp = {.x = Ss.x + Aa.x,
             .y = Ss.y + Aa.y};
   /* Prevent Overflow */

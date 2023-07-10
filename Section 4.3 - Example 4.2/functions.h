@@ -12,11 +12,11 @@
 #define max(x,y) (x > y ? x : y)
 
 /* Declarations */
-void randn(double mean, double std, double* array, size_t len);
-void randp(double mean, size_t* array, size_t len);
-double pdfp(double mean, size_t count);
-void softmax(double* pi, double* H, size_t len);
-size_t argmax(double* array, size_t len);
-size_t random_decision(double* pi, size_t len);
+void randn(double mean, double std, double* array, int len);
+void randp(double mean, int* array, int len);
+double pdfp(double mean, int count);
+void softmax(double* pi, double* H, int len);
+int argmax(double* array, int len);
+int random_decision(double* pi, int len);
 
 #endif /* FUNCTIONS_H */
