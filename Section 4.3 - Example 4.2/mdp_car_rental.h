@@ -2,7 +2,11 @@
 #define MDP_CAR_RENTAL_H
 
 #include <stdlib.h>
+#include <math.h>
 #include <curses.h>
+
+#include "data_structures.h"
+#include "functions.h"
 
 /* Macros */
 #define H 20
@@ -17,6 +21,7 @@ typedef struct pos {
 } pos;
 
 /* MDP */
+double mdp_car_rental(pos Ss, int a);
 pos car_policy(int a);
 int next_state(pos Ss, pos Aa);
 

@@ -7,9 +7,11 @@
 #include <time.h>
 
 #include "ltqnorm.h"
+#include "data_structures.h"
 
 /* Macros */
 #define max(x,y) (x > y ? x : y)
+#define min(x,y) (x < y ? x : y)
 
 /* Declarations */
 void randn(double mean, double std, double* array, int len);

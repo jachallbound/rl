@@ -1,5 +1,6 @@
 #include "mdp_car_rental.h"
 
+/* Curses */
 void draw(char c) {
   delch();
   insch(c);
@@ -11,6 +12,36 @@ void move_pos(pos Ss) {
   return;
 }
 
+
+/* MDP */
+double mdp_car_rental(pos Ss, int a) {
+  /* Values */
+  double r = 0; /* returns */
+  double p = 0; /* poisson probability */
+  pos Sp, I; /* next-state place holder */
+  
+  r = -MV*fabs(a); /* cost of moving cars last night */
+  Sp = car_policy(a); /* cars moved from last night */
+  Ss.x -= Sp.x;
+  Ss.y -= Sp.y;
+
+  /* Loop through all possible rental requests, limited to 10 */
+  for (int i = 0; i < POISSON_BOUND; i++) {
+    for (int ii = 0; ii < POISSON_BOUND; ii++) {
+      I.x = i;
+      I.y = ii;
+      p = pdfp(RQ1, i)*pdfp(RQ2, ii);
+      r += R1*min(Ss.x - i, 0); /* Reward for renting cars */
+      r += R1*min(Ss.y - ii, 0);
+      Ss.x = max(Ss.x - i, 0);
+      Ss.y = max(Ss.y - ii, 0);
+    }
+  }
+
+
+
+  return 0;
+}
 
 pos car_policy(int a) {
   pos Sa = {.x = -1*a, .y = a};
