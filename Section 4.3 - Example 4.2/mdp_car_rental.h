@@ -21,7 +21,7 @@ typedef struct pos {
 } pos;
 
 /* MDP */
-double mdp_car_rental(pos Ss, int a);
+double mdp_car_rental(pos Ss, int a, double* V);
 pos car_policy(int a);
 int next_state(pos Ss, pos Aa);
 

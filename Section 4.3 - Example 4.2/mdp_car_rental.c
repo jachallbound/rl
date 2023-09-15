@@ -14,33 +14,40 @@ void move_pos(pos Ss) {
 
 
 /* MDP */
-double mdp_car_rental(pos Ss, int a) {
+double mdp_car_rental(pos S, int a, double* V) {
   /* Values */
   double r = 0; /* returns */
-  double p = 0; /* poisson probability */
-  pos Sp, I; /* next-state place holder */
+  double rw = 0; /* reward */
+  double p = 0, pr = 0; /* poisson probability */
+  int sp = 0; /* next state index */
+  pos Ss, Sp, Spp, I; /* next-state place holder */
+  I.x = 0; I.y = 0; /* empty action */
   
-  r = -MV*fabs(a); /* cost of moving cars last night */
+  r = -MV*abs(a); /* cost of moving cars last night */
   Sp = car_policy(a); /* cars moved from last night */
-  Ss.x -= Sp.x;
-  Ss.y -= Sp.y;
+  Ss.x = S.x - Sp.x;
+  Ss.y = S.y - Sp.y;
 
   /* Loop through all possible rental requests, limited to 10 */
   for (int i = 0; i < POISSON_BOUND; i++) {
     for (int ii = 0; ii < POISSON_BOUND; ii++) {
-      I.x = i;
-      I.y = ii;
       p = pdfp(RQ1, i)*pdfp(RQ2, ii);
-      r += R1*min(Ss.x - i, 0); /* Reward for renting cars */
-      r += R1*min(Ss.y - ii, 0);
-      Ss.x = max(Ss.x - i, 0);
-      Ss.y = max(Ss.y - ii, 0);
+      rw = R1*min(Ss.x - i, 0) + R1*min(Ss.y - ii, 0); /* Reward for renting cars */
+      Spp.x = max(Ss.x - i, 0); /* Subtract rented cars from lot */
+      Spp.y = max(Ss.y - ii, 0);
+      /* Loop through all possible rental returns, limited to 10 */
+      for (int iii = 0; iii < POISSON_BOUND; iii++) {
+        for (int iv = 0; iv < POISSON_BOUND; iv++) {
+          pr = pdfp(RT1, iii)*pdfp(RT2, iv);
+          Sp.x = min(Spp.x + iii, MAX_CARS); /* Add returned cars to lot */
+          Sp.y = min(Spp.y + iv, MAX_CARS);
+          sp = next_state(Sp, I);
+          r += p * pr * (rw + G*V[sp]);
+        }
+      }
     }
   }
-
-
-
-  return 0;
+  return r;
 }
 
 pos car_policy(int a) {
