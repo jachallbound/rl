@@ -28,6 +28,7 @@ double pdfp(double mean, int count) {
   return (pow(mean, (double)count))/(tgamma((double)count+1))*exp(-1*mean);
 }
 
+/* Argmax */
 int argmax(double* array, int len) {
   double max = -1E9;
   int mi = 0;
@@ -40,6 +41,7 @@ int argmax(double* array, int len) {
   return mi;
 }
 
+/* Softmax */
 void softmax(double* pi, double* H, int len) {
   double Hb = 0;
   for (int i = 0; i < len; i++) Hb += exp(H[i]);
@@ -47,6 +49,7 @@ void softmax(double* pi, double* H, int len) {
   return;
 }
 
+/* Random decision */
 int random_decision(double* pi, int len) {
   double d = 0, p = 0;
   d = (double)rand()/RAND_MAX;
