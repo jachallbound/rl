@@ -4,4 +4,4 @@
 Close enough
 
 ## Run
-Run `./build.sh && ./main`
+Run `./build.sh && ./main && ./graph_4.3.sh`
