@@ -27,31 +27,43 @@ int main (void) {
   clear(); /* curses call to clear screen, send cursor to position (0,0) */
   refresh(); /* curses call to implement all changes since last refresh */
   curs_set(0); /* display cursor or not */
+  char str[STR_LEN];
 
   /* Values and Arrays */
   int N = 99; /* number of states: 1-99 */
-  int K = N+1; /* max number of actions: 0-99 */
-  double V[N]; randn(0, 0.1, V, N); /* value function */
-  char str[STR_LEN];
+  int sweep = 0; /* number of sweeps */
+  double V[N+2]; randn(0, 1, V, N); /* value function */
+  V[0] = 0; V[N+1] = 1;
+  int pi[N+2]; for (int i = 0; i < N+2; i++) pi[i] = 0; /* policy */
 
-  /* Policy iteration */
   double v = 0, dV = 0;
-  double E = 0.1;
+  double E = 1E-4;
 
-  for (int s = 1; s < N+1; s++) {
+  do { /* Value Iteration */
     /* Formuoli */
-    v = V[s-1];
-    V[s-1] = mdp(s, V);
+    dV = 0;
+    for (int s = 1; s < N+1; s++) {
+      v = V[s];
+      V[s] = mdp(wnd, s, V, pi);
+      dV = max(dV, fabs(v-V[s]));
+    }
 
     /* Display */
-    sprintf(str, "v = %4.1f, V[%3d] = %4.1f, \tdV = %4.1f\n", v, s, V[s], dV);
-    move(0,0);
+    sprintf(str, "sweep: %2d, dV = %2.2f\n", sweep++, dV);
+    move(1,0);
     winsnstr(wnd, str, 128);
     refresh();
-    getch();
+  } while(dV > E);
+
+  /* Print policy to file */
+  FILE* f = fopen("policy.dat", "w");
+  for (int s = 0; s < N+2; s++) {
+    fprintf(f, "%d %d\n", s, pi[s]);
   }
+  fclose(f);
 
   /* End Program */
+  getch();
   endwin();
   return 0;
 }

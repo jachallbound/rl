@@ -11,7 +11,7 @@
 /* Macros */
 
 /* MDP */
-double mdp(int s, double* V);
+double mdp(WINDOW* wnd, int s, double* V, int* pi);
 
 /* Draw in curses */
 void draw(char c);
