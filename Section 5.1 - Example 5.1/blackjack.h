@@ -14,7 +14,7 @@
 extern int len;
 extern int deck_n[52];
 
-extern char deck_s[13][2];
+extern char* deck_s[13];
 extern int dealt_i;
 extern int already_dealt;
 extern int dealt[52];

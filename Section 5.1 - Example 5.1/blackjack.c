@@ -16,19 +16,20 @@ card deal_card(void) {
       if (dealt[i] == dealt[dealt_i]) already_dealt++;
     }
   } while(already_dealt > 1);
-  /* Update deck */
-  dealt_i++;
+  
   /* Return dealt card */
   card c;
   c.n = deck_n[dealt[dealt_i]];
-  strcpy(c.c, deck_s[c.n%13]);
+  strcpy(c.c, deck_s[dealt[dealt_i]%13]);
   
+  /* Update deck */
+  if (dealt_i++ > DECK_SIZE) deck_reset();
   return c;
 }
 
 void add_card(hand* h) {
-  h->cards[h->L++] = deal_card();
   if (h->L > 1) h->L = 0;
+  h->cards[h->L++] = deal_card();
   return;
 }
 

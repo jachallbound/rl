@@ -14,7 +14,7 @@ int deck_n[52] = {2,3,4,5,6,7,8,9,10,10,10,10,11,
                   2,3,4,5,6,7,8,9,10,10,10,10,11,
                   2,3,4,5,6,7,8,9,10,10,10,10,11};
 
-char deck_s[13][2] = {" 2"," 3"," 4"," 5"," 6"," 7"," 8"," 9","10"," J"," Q"," K"," A"};
+char* deck_s[13] = {" 2"," 3"," 4"," 5"," 6"," 7"," 8"," 9","10"," J"," Q"," K"," A"};
 int dealt_i = 0;
 int already_dealt = 0;
 int dealt[52] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
@@ -48,15 +48,18 @@ int main (void) {
   hand agent;
   agent.id = AGENT;
   /* Deal two hands */
-  deck_reset();
-  add_card(&agent);
-  add_card(&agent);
-  add_card(&dealer);
-  add_card(&dealer);
-  /* Check */
-  printf("agent:[%d] %d, %s [%d] %d, %s\n",
-         0, agent.cards[0].n, agent.cards[0].c, 1, agent.cards[1].n, agent.cards[1].c);
-
+  /* Agent */
+  deck_reset(); /* Reset deck */
+  add_card(&agent); /* Deal 1st card */
+  add_card(&agent); /* Deal 2nd card */
+  /* Dealer */
+  add_card(&dealer); /* Deal 1st card */
+  add_card(&dealer); /* Deal 2nd card */
+  /* Check hands */
+  printf("agent:  %s, %s; hand length: %d\n", /* Check after dealing 2nd card */
+         agent.cards[0].c, agent.cards[1].c, agent.L);
+  printf("dealer: %s, %s; hand length: %d\n", /* Check after dealing 2nd card */
+         dealer.cards[0].c, dealer.cards[1].c, dealer.L);
 
   /* End Program */
   // getch();
