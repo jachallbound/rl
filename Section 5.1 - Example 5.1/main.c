@@ -41,27 +41,45 @@ int main (void) {
   refresh(); /* curses call to implement all changes since last refresh */
   curs_set(0); /* display cursor or not */
   char str[128];
+  char c;
 
   /* Initialize two hands */
   hand dealer;
   dealer.id = DEALER;
   hand agent;
   agent.id = AGENT;
-  /* Deal two hands */
-  /* Agent */
-  deck_reset(); /* Reset deck */
-  hand_add_card(&agent); /* Deal 1st card */
-  hand_add_card(&agent); /* Deal 2nd card */
-  hand_calculate_value(&agent); /* Calculate value of hand */
-  /* Dealer */
-  hand_add_card(&dealer); /* Deal 1st card */
-  hand_add_card(&dealer); /* Deal 2nd card */
-  hand_calculate_value(&dealer); /* Calculate value of hand */
-  /* Check hands */
-  printf("agent:  %s, %s; value %d\n", /* Check after dealing 2nd card */
-         agent.cards[0].c, agent.cards[1].c, agent.value);
-  printf("dealer: %s, %s; value %d\n", /* Check after dealing 2nd card */
-         dealer.cards[0].c, dealer.cards[1].c, dealer.value);
+  do {
+    /* Reset values */
+    curses_reset_screen(wnd);
+    int who_won = 0;
+    /* Deal two hands */
+    /* Agent */
+    deck_reset(); /* Reset deck */
+    hand_add_card(&agent); /* Deal 1st card */
+    hand_add_card(&agent); /* Deal 2nd card */
+    hand_calculate_value(&agent); /* Calculate value of hand */
+    /* Dealer */
+    hand_add_card(&dealer); /* Deal 1st card */
+    /* Print hands to screen */
+    curses_update_hands(wnd, &agent, &dealer);
+    /* Get input and make decision */
+    do {
+      c = getch();
+      /* Type 'h' to hit */
+      if (c == 'h') {
+        hand_add_card(&agent);
+        hand_calculate_value(&agent);
+        curses_update_hands(wnd, &agent, &dealer);
+      }
+    } while (c == 'h'); /* Type anything else to stay */
+    /* Deal second card to dealer */
+    hand_add_card(&dealer);
+    /* Check who won */
+    if (agent.value > dealer.value) who_won = 1;
+    /* Display results */
+    curses_end_game(wnd, who_won);
+  } while (c != 'q');
+
 
   /* End Program */
   getch();
@@ -71,6 +89,11 @@ int main (void) {
 
 
 
+//   /* Check hands */
+//   printf("agent:  %s, %s; value %d\n", /* Check after dealing 2nd card */
+//          agent.cards[0].c, agent.cards[1].c, agent.value);
+//   printf("dealer: %s, %s; value %d\n", /* Check after dealing 2nd card */
+//          dealer.cards[0].c, dealer.cards[1].c, dealer.value);
 
   /* Initialize deck */
   // int in_deck = 0;

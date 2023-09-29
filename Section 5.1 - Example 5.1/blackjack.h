@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <curses.h>
 #include "functions.h"
 
 /* Macros */
@@ -45,5 +46,8 @@ card card_deal(void);
 void hand_add_card(hand* h);
 void hand_calculate_value(hand* h);
 void hand_reset(hand* h);
+void curses_reset_screen(WINDOW* wnd);
+void curses_update_hands(WINDOW* wnd, hand* agent, hand* dealer);
+void curses_end_game(WINDOW* wnd, int who_won);
 
 #endif /* BLACKJACK_H */

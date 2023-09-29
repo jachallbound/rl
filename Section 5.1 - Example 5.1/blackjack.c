@@ -54,3 +54,32 @@ void hand_calculate_value(hand* h) {
 void hand_reset(hand* h) {
   h->L = 0;
 }
+
+void curses_reset_screen(WINDOW* wnd) {
+  /* Screen:
+  0        10        20        30        40        50
+  123456789012345678901234567890123456789012345678901234567890
+  Player:  Cards:              Value:    Outcome:
+  Agent
+  Dealer
+  
+  */
+  move(0,0);
+  winsnstr(wnd, "Player:  Cards:              Value:    Outcome:\n", 128);
+  move(1,0);
+  winsnstr(wnd, "Agent                                          \n", 128);
+  move(2,0);
+  winsnstr(wnd, "Dealer                                         \n", 128);
+
+
+  refresh();
+  return;
+}
+
+void curses_update_hands(WINDOW* wnd, hand* agent, hand* dealer) {
+  return;
+}
+
+void curses_end_game(WINDOW* wnd, int who_won) {
+  return;
+}
