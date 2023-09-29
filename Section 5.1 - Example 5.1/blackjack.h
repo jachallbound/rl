@@ -7,6 +7,7 @@
 
 /* Macros */
 #define DECK_SIZE 52
+#define HAND_SIZE 10
 #define UNIQUE_CARDS 13
 
 /* Structures */
@@ -19,28 +20,30 @@ extern int dealt_i;
 extern int already_dealt;
 extern int dealt[52];
 
-typedef struct card {
-  int n;
-  char c[2];
-} card;
-
 typedef enum player {
   DEALER,
   AGENT,
   USER
 } player;
 
+typedef struct card {
+  int n;
+  char c[2];
+} card;
+
 typedef struct hand {
-  card cards[2];
+  card cards[HAND_SIZE];
   int L;
   int value;
+  int bust;
   player id;
 } hand;
 
 /* Functions */
 void deck_reset(void);
-card deal_card(void);
-void add_card(hand* h);
-void calculate_hand_value(hand* h);
+card card_deal(void);
+void hand_add_card(hand* h);
+void hand_calculate_value(hand* h);
+void hand_reset(hand* h);
 
 #endif /* BLACKJACK_H */

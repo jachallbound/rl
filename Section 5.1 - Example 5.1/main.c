@@ -34,13 +34,13 @@ int main (void) {
   srand(time(NULL));
 
   /*** BEGIN CURSES ***/
-  // WINDOW* wnd = initscr(); /* curses call to initialize window */
-  // cbreak(); /* curses call to set no waiting for Enter key */
-  // noecho(); /* curses call to set no echoing */
-  // clear(); /* curses call to clear screen, send cursor to position (0,0) */
-  // refresh(); /* curses call to implement all changes since last refresh */
-  // curs_set(0); /* display cursor or not */
-  // char str[128];
+  WINDOW* wnd = initscr(); /* curses call to initialize window */
+  cbreak(); /* curses call to set no waiting for Enter key */
+  noecho(); /* curses call to set no echoing */
+  clear(); /* curses call to clear screen, send cursor to position (0,0) */
+  refresh(); /* curses call to implement all changes since last refresh */
+  curs_set(0); /* display cursor or not */
+  char str[128];
 
   /* Initialize two hands */
   hand dealer;
@@ -50,21 +50,23 @@ int main (void) {
   /* Deal two hands */
   /* Agent */
   deck_reset(); /* Reset deck */
-  add_card(&agent); /* Deal 1st card */
-  add_card(&agent); /* Deal 2nd card */
+  hand_add_card(&agent); /* Deal 1st card */
+  hand_add_card(&agent); /* Deal 2nd card */
+  hand_calculate_value(&agent); /* Calculate value of hand */
   /* Dealer */
-  add_card(&dealer); /* Deal 1st card */
-  add_card(&dealer); /* Deal 2nd card */
+  hand_add_card(&dealer); /* Deal 1st card */
+  hand_add_card(&dealer); /* Deal 2nd card */
+  hand_calculate_value(&dealer); /* Calculate value of hand */
   /* Check hands */
-  printf("agent:  %s, %s; hand length: %d\n", /* Check after dealing 2nd card */
-         agent.cards[0].c, agent.cards[1].c, agent.L);
-  printf("dealer: %s, %s; hand length: %d\n", /* Check after dealing 2nd card */
-         dealer.cards[0].c, dealer.cards[1].c, dealer.L);
+  printf("agent:  %s, %s; value %d\n", /* Check after dealing 2nd card */
+         agent.cards[0].c, agent.cards[1].c, agent.value);
+  printf("dealer: %s, %s; value %d\n", /* Check after dealing 2nd card */
+         dealer.cards[0].c, dealer.cards[1].c, dealer.value);
 
   /* End Program */
-  // getch();
-  // endwin();
-  // return 0;
+  getch();
+  endwin();
+  return 0;
 }
 
 

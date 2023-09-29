@@ -7,7 +7,7 @@ void deck_reset(void) {
   return;
 }
 
-card deal_card(void) {
+card card_deal(void) {
   /* Deal new card that is still in deck */
   do {
     already_dealt = 0;
@@ -16,7 +16,7 @@ card deal_card(void) {
       if (dealt[i] == dealt[dealt_i]) already_dealt++;
     }
   } while(already_dealt > 1);
-  
+
   /* Return dealt card */
   card c;
   c.n = deck_n[dealt[dealt_i]];
@@ -27,17 +27,30 @@ card deal_card(void) {
   return c;
 }
 
-void add_card(hand* h) {
-  if (h->L > 1) h->L = 0;
-  h->cards[h->L++] = deal_card();
+void hand_add_card(hand* h) {
+  if (h->L > HAND_SIZE) h->L = 0;
+  h->cards[h->L++] = card_deal();
   return;
 }
 
-void calculate_hand_value(hand* h) {
-  h->value = 0;
-  for (int i = 0; i < h->L; i++) {
-    h->value += h->cards[i].n; 
+void hand_calculate_value(hand* h) {
+  h->value = 0; /* Reset */
+  if (h->L > 0) { /* Loop through entire hand */
+    /* Add all card values */
+    for (int i = 0; i < h->L; i++) h->value += h->cards[i].n;
+    /* If hand is over 21, check for any aces and change them to 1 */
+    if (h->value > 21) {
+      for (int i = 0; i < h->L; i++) {
+        if (h->cards[i].n == 11) h->value -= 10;
+        if (h->value <= 21) break;
+      }
+    }
+    if (h->value > 21) h->bust = 1;
+    else h->bust = 0;
   }
-
   return;
+}
+
+void hand_reset(hand* h) {
+  h->L = 0;
 }
