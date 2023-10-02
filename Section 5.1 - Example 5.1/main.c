@@ -21,12 +21,8 @@ int dealt[52] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
                  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
                  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
                  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
-
-/* Declarations */
-
-/* Functions */
-
-/* Macros */
+int agent_wins = 0;
+int dealer_wins = 0;
 
 /* Main */
 int main (void) {
@@ -40,44 +36,61 @@ int main (void) {
   clear(); /* curses call to clear screen, send cursor to position (0,0) */
   refresh(); /* curses call to implement all changes since last refresh */
   curs_set(0); /* display cursor or not */
-  char str[128];
+  // char str[128];
   char c;
 
   /* Initialize two hands */
-  hand dealer;
-  dealer.id = DEALER;
   hand agent;
   agent.id = AGENT;
+  hand dealer;
+  dealer.id = DEALER;
   do {
     /* Reset values */
     curses_reset_screen(wnd);
-    int who_won = 0;
-    /* Deal two hands */
-    /* Agent */
+    hand_reset(&agent);
+    hand_reset(&dealer);
+    player winner = DEALER;
     deck_reset(); /* Reset deck */
-    hand_add_card(&agent); /* Deal 1st card */
-    hand_add_card(&agent); /* Deal 2nd card */
-    hand_calculate_value(&agent); /* Calculate value of hand */
-    /* Dealer */
-    hand_add_card(&dealer); /* Deal 1st card */
-    /* Print hands to screen */
+    /* Deal two hands */
+    hand_add_card(&agent);
+    hand_add_card(&agent);
+    hand_add_card(&dealer);
     curses_update_hands(wnd, &agent, &dealer);
-    /* Get input and make decision */
+    /* Get input and make decision to hit or stay */
     do {
       c = getch();
       /* Type 'h' to hit */
       if (c == 'h') {
-        hand_add_card(&agent);
-        hand_calculate_value(&agent);
+        if (hand_add_card(&agent)) goto end_hand;
+        // if (hand_calculate_value(&agent)) goto end_hand;
         curses_update_hands(wnd, &agent, &dealer);
       }
     } while (c == 'h'); /* Type anything else to stay */
     /* Deal second card to dealer */
     hand_add_card(&dealer);
+    hand_calculate_value(&dealer);
+    hand_dealer_decision(&dealer);
     /* Check who won */
-    if (agent.value > dealer.value) who_won = 1;
+    end_hand:
+    curses_update_hands(wnd, &agent, &dealer);
+    if (agent.value > dealer.value) {
+      if (!agent.bust)
+        winner = AGENT;
+      else
+        winner = DEALER;
+    } else if (agent.value < dealer.value) {
+      if (!dealer.bust)
+        winner = DEALER;
+      else
+        winner = AGENT;
+    }
+    // if ((agent.value > dealer.value) && (!agent.bust && dealer.bust))
+    //   winner = AGENT;
+    // else if ((agent.value < dealer.value) && (agent.bust && !dealer.bust))
+    //   winner = DEALER;
     /* Display results */
-    curses_end_game(wnd, who_won);
+    curses_end_game(winner);
+    getch();
   } while (c != 'q');
 
 

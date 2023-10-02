@@ -27,13 +27,17 @@ card card_deal(void) {
   return c;
 }
 
-void hand_add_card(hand* h) {
-  if (h->L > HAND_SIZE) h->L = 0;
+int hand_add_card(hand* h) {
+  if (h->L > HAND_SIZE) {
+    hand_bust(h);
+    return 1;
+  }
   h->cards[h->L++] = card_deal();
-  return;
+  int bust_or_not = hand_calculate_value(h);
+  return bust_or_not;
 }
 
-void hand_calculate_value(hand* h) {
+int hand_calculate_value(hand* h) {
   h->value = 0; /* Reset */
   if (h->L > 0) { /* Loop through entire hand */
     /* Add all card values */
@@ -45,20 +49,51 @@ void hand_calculate_value(hand* h) {
         if (h->value <= 21) break;
       }
     }
-    if (h->value > 21) h->bust = 1;
-    else h->bust = 0;
+    if (h->value > 21) {
+      hand_bust(h);
+      return 1;
+    } else h->bust = 0;
   }
+  return 0;
+}
+
+void hand_bust(hand* h) {
+  h->bust = 1;
+  player winner = DEALER;
+  switch (h->id) {
+    case DEALER:
+      winner = AGENT;
+      break;
+    case AGENT:
+      winner = DEALER;
+      break;
+  }
+  curses_end_game(winner);
   return;
 }
 
 void hand_reset(hand* h) {
   h->L = 0;
+  return;
+}
+
+int hand_dealer_decision(hand *dealer) {
+  while (dealer->value < 17) {
+    hand_add_card(dealer);
+    hand_calculate_value(dealer);
+  }
+  if (dealer->value > 21) {
+    hand_bust(dealer);
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 void curses_reset_screen(WINDOW* wnd) {
   /* Screen:
-  0        10        20        30        40        50
-  123456789012345678901234567890123456789012345678901234567890
+  0         10        20        30        40        50
+  012345678901234567890123456789012345678901234567890123456789
   Player:  Cards:              Value:    Outcome:
   Agent
   Dealer
@@ -77,9 +112,66 @@ void curses_reset_screen(WINDOW* wnd) {
 }
 
 void curses_update_hands(WINDOW* wnd, hand* agent, hand* dealer) {
+  curses_reset_screen(wnd);
+  /* Agent Cards */
+  for (int i = 0; i < agent->L; i++) {
+    move(1,9+i*3);
+    draw(agent->cards[i].c[0]);
+    move(1,9+i*3+1);
+    draw(agent->cards[i].c[1]);
+    move(1,9+i*3+2);
+    draw(',');
+  }
+  delch(); /* delete final comma */
+  /* Agent Value */
+  move(1, 30);
+  draw(48+agent->value/10);
+  move(1, 31);
+  draw(48+agent->value-10*(agent->value/10));
+
+  /* Dealer Cards */
+  for (int i = 0; i < dealer->L; i++) {
+    move(2,9+i*3);
+    draw(dealer->cards[i].c[0]);
+    move(2,9+i*3+1);
+    draw(dealer->cards[i].c[1]);
+    move(2,9+i*3+2);
+    draw(',');
+  }
+  delch(); /* delete final comma */
+  /* Agent Value */
+  move(2, 30);
+  draw(48+dealer->value/10);
+  move(2, 31);
+  draw(48+dealer->value-10*(dealer->value/10));
+
+  refresh();
   return;
 }
 
-void curses_end_game(WINDOW* wnd, int who_won) {
+void curses_end_game(player who_won) {
+  int curses_row = 0;
+  switch (who_won) {
+    case DEALER:
+      dealer_wins++;
+      curses_row = 2;
+      break;
+    case AGENT:
+      agent_wins++;
+      curses_row = 1;
+      break;
+  }
+  move(curses_row, 40);
+  draw('W');
+  move(curses_row, 41);
+  draw('i');
+  move(curses_row, 42);
+  draw('n');
+  return;
+}
+
+void draw(char c) {
+  delch();
+  insch(c);
   return;
 }
