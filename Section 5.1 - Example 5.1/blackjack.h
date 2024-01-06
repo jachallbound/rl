@@ -8,7 +8,7 @@
 
 /* Macros */
 #define DECK_SIZE 52
-#define HAND_SIZE 6
+#define HAND_SIZE 8
 #define UNIQUE_CARDS 13
 #define HAND_BUST_ENDS_GAME 0
 

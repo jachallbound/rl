@@ -1,6 +1,6 @@
 #include "monte_carlo_blackjack.h"
 
-void monte_carlo_blackjack(WINDOW* wnd, double V[S0][S1][S2], int R[S0][S1][S2], int pi, int episodes) {
+void monte_carlo_blackjack(double V[S0][S1][S2], int R[S0][S1][S2], int pi, int episodes) {
   /*** S MUST BE 3 ELEMENT ARRAY ***/
 
   /* Values */
@@ -82,10 +82,6 @@ void monte_carlo_blackjack(WINDOW* wnd, double V[S0][S1][S2], int R[S0][S1][S2],
       V[i0][i1][i2] += reward; /* summation of all rewards at this state */
       R[i0][i1][i2] ++; /* visits to this state */
     }
-
-
-
-
   }
 
 
@@ -94,12 +90,16 @@ void monte_carlo_blackjack(WINDOW* wnd, double V[S0][S1][S2], int R[S0][S1][S2],
 
 void monte_carlo_play_hand(hand* h, int hit_threshold) {
   blackjack_action action = HIT;
+  int hits = 0;
   do {
     if (h->value < hit_threshold) {
       action = HIT;
       hand_add_card(h);
+      printf("HIT: h->value = %d, hit_threshold = %d\n", h->value, hit_threshold);
+      if (++hits > 10) exit(1);
     } else {
       action = STICK;
+      printf("STICK\n");
     }
     hand_calculate_value(h);
   } while(action != STICK);
