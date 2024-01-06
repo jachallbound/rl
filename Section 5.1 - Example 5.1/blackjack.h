@@ -10,6 +10,7 @@
 #define DECK_SIZE 52
 #define HAND_SIZE 6
 #define UNIQUE_CARDS 13
+#define HAND_BUST_ENDS_GAME 0
 
 /* Structures */
 /* 52 card deck, suit doesn't matter in blackjack */
@@ -24,10 +25,16 @@ extern int dealt[52];
 extern int agent_wins;
 extern int dealer_wins;
 
+typedef enum blackjack_action {
+  HIT,
+  STICK
+} blackjack_action;
+
 typedef enum player {
   DEALER,
   AGENT,
-  USER
+  USER,
+  DRAW
 } player;
 
 typedef struct card {
@@ -51,6 +58,7 @@ int hand_calculate_value(hand* h);
 int hand_dealer_decision(hand *dealer);
 void hand_reset(hand* h);
 void hand_bust(hand* h);
+player hand_decide_winner(hand* agent, hand* dealer);
 void curses_reset_screen(WINDOW* wnd);
 void curses_update_hands(WINDOW* wnd, hand* agent, hand* dealer);
 void curses_end_game(player who_won);

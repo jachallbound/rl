@@ -45,7 +45,12 @@ int hand_calculate_value(hand* h) {
     /* If hand is over 21, check for any aces and change them to 1 */
     if (h->value > 21) {
       for (int i = 0; i < h->L; i++) {
-        if (h->cards[i].n == 11) h->value -= 10;
+        if (h->cards[i].n == 11) {
+          /* Change value of card in hand, to reflect if ace changed value */
+          /* This shouldn't break anything */
+          h->cards[i].n = 1;
+          h->value -= 10;
+        }
         if (h->value <= 21) break;
       }
     }
@@ -68,7 +73,11 @@ void hand_bust(hand* h) {
       winner = DEALER;
       break;
   }
-  curses_end_game(winner);
+
+  #if HAND_BUST_ENDS_GAME
+  curses_end_game(winner); /* Remove this functionality for now */
+  #endif
+  
   return;
 }
 
@@ -88,6 +97,27 @@ int hand_dealer_decision(hand *dealer) {
   } else {
     return 0;
   }
+}
+
+player hand_decide_winner(hand* agent, hand* dealer) {
+  player winner;
+  if ((agent->bust && dealer->bust) || (agent->value == dealer->value)) {
+    /* If both players bust, it is a draw */
+    winner = DRAW;
+  } else if (agent->value > dealer->value) {
+    /* Agent has greater value, if he hasn't busted, he wins */    
+    if (!agent->bust)
+      winner = AGENT;
+    else
+      winner = DEALER;
+  } else if (agent->value < dealer->value) {
+    /* Dealer has greater value, if he hasn't busted, he wins */    
+    if (!dealer->bust)
+      winner = DEALER;
+    else
+      winner = AGENT;
+  }
+  return winner;
 }
 
 void curses_reset_screen(WINDOW* wnd) {

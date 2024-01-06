@@ -6,6 +6,10 @@
 
 #include "functions.h"
 #include "blackjack.h"
+#include "monte_carlo_blackjack.h"
+
+/* Macros */
+#define TRAIN_AGENT_OR_PLAY_BLACKJACK 1 /* 1: train agent, 0: play blackjack */
 
 /* Global */
 int len = 52;
@@ -38,8 +42,41 @@ int main (void) {
   curs_set(0); /* display cursor or not */
   // char str[128];
   char c;
+  endwin();
 
-  /* Initialize two hands */
+
+  /* Policy: hit for hand value < 20 */
+  int pi = 20;
+
+  /* number of states: S[0] agent's starting hand, S[1] dealer's showing card, S[2] usable ace */
+  int S[3] = {S0, S1, S2};
+  int episodes = 10000; /* number of episodes */
+
+  /* 1: train agent as described in Example 5.1 */
+  #if TRAIN_AGENT_OR_PLAY_BLACKJACK
+
+  /* Initialize states */
+  int S_total = S[0]*S[1]*S[2];
+  double V[S[0]][S[1]][S[2]]; randn(0, 1, V, S_total); /* state values */
+  int    R[S[0]][S[1]][S[2]]; /* return count for averaging */
+  
+  monte_carlo_blackjack(wnd, V, R, pi, episodes);
+
+  /* Check V */
+  FILE* f = fopen("V.dat", "w");
+  for (int i = 0; i < S0; i++) {
+    for (int ii = 0; ii < S1; ii++) {
+      for (int iii = 0; iii < S2; iii++) {
+        fprintf(f, "%2.5f ", V[i][ii][iii]/R[i][ii][iii]);
+      }
+    }
+    fprintf(f, "\n");
+  }
+  fclose(f);
+
+
+  /* 0: play blackjack */
+  #else
   hand agent;
   agent.id = AGENT;
   hand dealer;
@@ -73,54 +110,16 @@ int main (void) {
     /* Check who won */
     end_hand:
     curses_update_hands(wnd, &agent, &dealer);
-    if (agent.value > dealer.value) {
-      if (!agent.bust)
-        winner = AGENT;
-      else
-        winner = DEALER;
-    } else if (agent.value < dealer.value) {
-      if (!dealer.bust)
-        winner = DEALER;
-      else
-        winner = AGENT;
-    }
-    // if ((agent.value > dealer.value) && (!agent.bust && dealer.bust))
-    //   winner = AGENT;
-    // else if ((agent.value < dealer.value) && (agent.bust && !dealer.bust))
-    //   winner = DEALER;
+    winner = hand_decide_winner(&agent, &dealer);
     /* Display results */
     curses_end_game(winner);
     getch();
   } while (c != 'q');
 
+  #endif /* TRAIN_AGENT_OR_PLAY_BLACKJACK */
 
   /* End Program */
-  getch();
+  // getch();
   endwin();
   return 0;
 }
-
-
-
-//   /* Check hands */
-//   printf("agent:  %s, %s; value %d\n", /* Check after dealing 2nd card */
-//          agent.cards[0].c, agent.cards[1].c, agent.value);
-//   printf("dealer: %s, %s; value %d\n", /* Check after dealing 2nd card */
-//          dealer.cards[0].c, dealer.cards[1].c, dealer.value);
-
-  /* Initialize deck */
-  // int in_deck = 0;
-  // int dealt[DECK_SIZE]; for(int i = 0; i < DECK_SIZE; i++) dealt[i] = -1;
-
-  // /* Deal all 52 cards in random order */
-  // for (int i = 0; i < DECK_SIZE; i++) {
-  //   do { /* Deal a new unique card */
-  //     in_deck = 0;
-  //     dealt[i] = uniform_decision(DECK_SIZE);
-  //     /* Check if card index has been dealt already, lol */
-  //     for (int ii = 0; ii <= i; ii++) {
-  //       if (dealt[ii] == dealt[i]) in_deck++;
-  //     }
-  //   } while(in_deck > 1);
-  //   printf("i: %2d, card: %2d, index: %2d\n", i, deck_n[dealt[i]], dealt[i]);
-  // }
