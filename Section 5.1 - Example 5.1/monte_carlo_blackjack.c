@@ -1,8 +1,6 @@
 #include "monte_carlo_blackjack.h"
 
 void monte_carlo_blackjack(double V[S0][S1][S2], int R[S0][S1][S2], int pi, int episodes) {
-  /*** S MUST BE 3 ELEMENT ARRAY ***/
-
   /* Values */
   int reward = 0;
   int i0 = 0, i1 = 0, i2 = 0;
@@ -18,7 +16,7 @@ void monte_carlo_blackjack(double V[S0][S1][S2], int R[S0][S1][S2], int pi, int 
   /* First-visit Monte Carlo */
   for (int i = 0; i < episodes; i++) {
     /* display progress */
-    printf("Episode: %d\n", i);
+    // printf("Episode: %d\n", i);
 
     /* Reset values */
     hand_reset(&agent);
@@ -95,35 +93,33 @@ void monte_carlo_play_hand(hand* h, int hit_threshold) {
     if (h->value < hit_threshold) {
       action = HIT;
       hand_add_card(h);
-      printf("HIT: h->value = %d, hit_threshold = %d\n", h->value, hit_threshold);
-      if (++hits > 10) exit(1);
+      if (++hits > 100) exit(1);
     } else {
       action = STICK;
-      printf("STICK\n");
     }
     hand_calculate_value(h);
   } while(action != STICK);
   return;
 }
 
+void zero_double_3d(double double_matrix[S0][S1][S2]) {
+  for (int s0 = 0; s0 < S0; s0++) {
+    for (int s1 = 0; s1 < S1; s1++) {
+      for (int s2 = 0; s2 < S2; s2++) {
+        double_matrix[s0][s1][s2] = 0;
+      }
+    }
+  }
+  return;
+}
 
-//     /* Get input and make decision to hit or stay */
-//     do {
-//       c = getch();
-//       /* Type 'h' to hit */
-//       if (c == 'h') {
-//         if (hand_add_card(&agent)) goto end_hand;
-//         // if (hand_calculate_value(&agent)) goto end_hand;
-//         curses_update_hands(wnd, &agent, &dealer);
-//       }
-//     } while (c == 'h'); /* Type anything else to stay */
-//     /* Deal second card to dealer */
-//     hand_add_card(&dealer);
-//     hand_calculate_value(&dealer);
-//     hand_dealer_decision(&dealer);
-//     /* Check who won */
-//     end_hand:
-//     curses_update_hands(wnd, &agent, &dealer);
-//     winner = hand_decide_winner(&agent, &dealer);
-//     /* Display results */
-//     curses_end_game
+void zero_int_3d(int int_matrix[S0][S1][S2]) {
+  for (int s0 = 0; s0 < S0; s0++) {
+    for (int s1 = 0; s1 < S1; s1++) {
+      for (int s2 = 0; s2 < S2; s2++) {
+        int_matrix[s0][s1][s2] = 0;
+      }
+    }
+  }
+  return;
+}

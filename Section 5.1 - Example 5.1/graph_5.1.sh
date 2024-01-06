@@ -31,12 +31,14 @@
  	
 
 set title "Blackjack: Monte Carlo First-visit Prediction"
+set xlabel "Dealer State" 
+set ylabel "Agent State"
 set xrange [-0.5:11]
-set yrange [-0.5:21]
+set yrange [-0.5:11]
 
 set grid
 set hidden3d
-splot 'V.dat' matrix with lines notitle
+splot 'V.dat' matrix with lines
 
 # based off of:
 # http://gnuplot.info/demo/surface1.4.gnu
