@@ -9,20 +9,20 @@
 
 #include "functions.h"
 #include "blackjack.h"
+#include "volk_arrays.h"
 
-/* Macros */
-#define S0 10 /* 3D matrix dimension lengths */
-#define S1 10
-#define S2 2
-#define A0 2 /* possible actions: 0: hit, 1: stick */
 
 /* Functions */
-void monte_carlo_blackjack(double Q[S0][S1][S2][A0], int P[S0][S1][S2], int R[S0][S1][S2][A0], int episodes);
-blackjack_action monte_carlo_play_hand(hand* hand0, int hit_threshold);
+/* Mont carlo functions */
+void monte_carlo_blackjack(double* Q, double* R, double* P, double* V, int episodes);
+int monte_carlo_first_card_index(hand* h);
 
+#if 0
+/* 4d static array functions */
 void zero_double_3d(double double_matrix[S0][S1][S2]);
 void zero_double_4d(double double_matrix[S0][S1][S2][A0]);
 void zero_int_3d(int int_matrix[S0][S1][S2]);
 void zero_int_4d(int int_matrix[S0][S1][S2][A0]);
+#endif
 
 #endif /* MONTE_CARLO_BLACKJACK_H */

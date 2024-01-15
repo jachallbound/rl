@@ -1,12 +1,10 @@
 #include "monte_carlo_blackjack.h"
 
 // void monte_carlo_blackjack(double V[S0][S1][S2], int R[S0][S1][S2], int pi, int episodes) {
-void monte_carlo_blackjack(double Q[S0][S1][S2][A0], int P[S0][S1][S2], int R[S0][S1][S2][A0], int episodes) {
+void monte_carlo_blackjack(double* Q, double* R, double* P, double* V, int episodes) {
   /* Values */
-  //int reward = 0;
   int i0 = 0, i1 = 0, i2 = 0; /* state indices */
   blackjack_action a = HIT; /* actions */
-  //int agent_value_before_busting = 0;
   double Qa[2] = {0, 0};
 
   /* Initialize two hands */
@@ -19,7 +17,7 @@ void monte_carlo_blackjack(double Q[S0][S1][S2][A0], int P[S0][S1][S2], int R[S0
   /* First-visit Monte Carlo */
   for (int i = 0; i < episodes; i++) {
     /* display progress */
-    printf("Episode: %d\n", i);
+    // if (i%1000 == 0) printf("Episode: %4d | \n", i);
 
     /* Reset values */
     hand_reset(&agent);
@@ -38,7 +36,7 @@ void monte_carlo_blackjack(double Q[S0][S1][S2][A0], int P[S0][S1][S2], int R[S0
 
     /* Dealer play until he decides to stick */
     hand_dealer_plays(&dealer);
-    i1 = dealer.cards[0].n - 1; /* Dealer state: convert card value to index 0-9 */
+    i1 = monte_carlo_first_card_index(&dealer); /* Dealer state: convert card value to index 0-9 */
 
     /* Monte Carlo Exploring Starts */
     /* Hit until agent.value > 12 */
@@ -59,7 +57,7 @@ void monte_carlo_blackjack(double Q[S0][S1][S2][A0], int P[S0][S1][S2], int R[S0
         i0 = agent.value - 12; /* convert hand value to index 0-9 */
         i2 = hand_has_usable_ace(&agent); /* Check if Agent has usable ace */
         /* Get action from policy */
-        a = (blackjack_action)P[i0][i1][i2];
+        a = (blackjack_action)get_volk_3d(P, i0, i1, i2, S0*S1*S2);
       }
     }
 
@@ -71,16 +69,31 @@ void monte_carlo_blackjack(double Q[S0][S1][S2][A0], int P[S0][S1][S2], int R[S0
     i2 = hand_has_usable_ace(&agent); /* check usable ace again, incase random `a` is STICK */
 
     /* Update action-state-value */
-    Q[i0][i1][i2][a] += winner; /* summation of all rewards at this action-state */
-    R[i0][i1][i2][a] ++; /* visits to this action-state */
+    set_volk_4d(Q, (double)winner, i0, i1, i2, (int)a, S0*S1*S2*A0); /* summation of all rewards at this action-state */
+    set_volk_4d(Q, get_volk_4d(R, i0, i1, i2, (int)a, S0*S1*S2*A0)+1, i0, i1, i2, (int)a, S0*S1*S2*A0); /* visits to this action-state */
     /* Choose action with higher value */
-    Qa[0] = Q[i0][i1][i2][0]/R[i0][i1][i2][0]; /* averaged action-state value */
-    Qa[1] = Q[i0][i1][i2][1]/R[i0][i1][i2][1]; /* there are only 2 possible actions */
-    P[i0][i1][i2] = argmax(Qa, 2);
+    /* Qa: averaged action-state value */
+    Qa[0] = get_volk_4d(Q, i0, i1, i2, 0, S0*S1*S2*A0) / get_volk_4d(R, i0, i1, i2, 0, S0*S1*S2*A0);
+    Qa[1] = get_volk_4d(Q, i0, i1, i2, 1, S0*S1*S2*A0) / get_volk_4d(R, i0, i1, i2, 1, S0*S1*S2*A0);
+    
+    /* policy is argmax of both actions at current action state */
+    set_volk_3d(P, (double)argmax(Qa, 2), i0, i1, i2, S0*S1*S2);
+
+    /* state value is action-state value at argmax of both actions */
+    set_volk_3d(V, Qa[argmax(Qa,2)], i0, i1, i2, S0*S1*S2);
   }
 
   return;
 }
+
+int monte_carlo_first_card_index(hand* h) {
+  /* Return index of 1st dealt card. Correct for ace */
+  /* Subtract 1 for all cards except ace which is always index 0 */
+  return (h->cards[0].n != 1 && h->cards[0].n != 11) ? h->cards[0].n - 1 : 0;
+}
+
+#if 0
+/* 4d static array functions */
 
 void zero_double_3d(double double_matrix[S0][S1][S2]) {
   for (int s0 = 0; s0 < S0; s0++) {
@@ -129,3 +142,4 @@ void zero_int_4d(int int_matrix[S0][S1][S2][A0]) {
   }
   return;
 }
+#endif
