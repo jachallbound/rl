@@ -1,12 +1,12 @@
 #include "monte_carlo_blackjack.h"
 
 // void monte_carlo_blackjack(double V[S0][S1][S2], int R[S0][S1][S2], int pi, int episodes) {
-void monte_carlo_blackjack(double Q[S0][S1][S2][A0], double P[S0][S1][S2], double R[S0][S1][S2][A0], int episodes) {
+void monte_carlo_blackjack(double Q[S0][S1][S2][A0], int P[S0][S1][S2], int R[S0][S1][S2][A0], int episodes) {
   /* Values */
-  int reward = 0;
+  //int reward = 0;
   int i0 = 0, i1 = 0, i2 = 0; /* state indices */
-  blackjack_action a0 = HIT, a = HIT; /* actions */
-  int agent_value_before_busting = 0;
+  blackjack_action a = HIT; /* actions */
+  //int agent_value_before_busting = 0;
   double Qa[2] = {0, 0};
 
   /* Initialize two hands */
@@ -19,7 +19,7 @@ void monte_carlo_blackjack(double Q[S0][S1][S2][A0], double P[S0][S1][S2], doubl
   /* First-visit Monte Carlo */
   for (int i = 0; i < episodes; i++) {
     /* display progress */
-    // printf("Episode: %d\n", i);
+    printf("Episode: %d\n", i);
 
     /* Reset values */
     hand_reset(&agent);
@@ -52,10 +52,15 @@ void monte_carlo_blackjack(double Q[S0][S1][S2][A0], double P[S0][S1][S2], doubl
     while (a == HIT) {
       hand_add_card(&agent); /* deal a card */
       hand_calculate_value(&agent); /* calculate new hand value */
-      /* Calculate state to choose policy */
-      i0 = agent.value - 12; /* convert hand value to index 0-9 */
-      i2 = hand_has_usable_ace(&agent); /* Check if Agent has usable ace */
-      a = (blackjack_action)P[i0][i1][i2];
+      /* If agent has busted, break */
+      if (agent.bust) break;
+      else { /* agent has not busted yet */
+        /* Calculate state to choose policy */
+        i0 = agent.value - 12; /* convert hand value to index 0-9 */
+        i2 = hand_has_usable_ace(&agent); /* Check if Agent has usable ace */
+        /* Get action from policy */
+        a = (blackjack_action)P[i0][i1][i2];
+      }
     }
 
     /* Decide winner */

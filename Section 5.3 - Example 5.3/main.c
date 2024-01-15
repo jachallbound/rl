@@ -33,19 +33,19 @@ int main (void) {
   /* Set random seed */
   srand(time(NULL));
 
-  int episodes = 500000; /* number of episodes */
+  int episodes = 1000; /* number of episodes */
 
   /* 1: train agent as described in Example 5.1 */
   #if TRAIN_AGENT_OR_PLAY_BLACKJACK
 
   /* Initialize matrices */
-  double V[S0][S1][S2]; zero_double_3d(V); /* state values */
-  int    P[S0][S1][S2]; zero_int_3d(P); /* policy */
-  double Q[S0][S1][S2][A0]; zero_double_4d(Q); /* action-state values */
-  int    R[S0][S1][S2][A0]; zero_int_4d(R); /* return count for averaging */
-  
-  monte_carlo_blackjack(Q, P, R, episodes);
+  //double Q[S0][S1][S2][A0]; zero_double_4d(Q); /* action-state values */
+  //int    P[S0][S1][S2]; zero_int_3d(P); /* policy */
+  //int    R[S0][S1][S2][A0]; zero_int_4d(R); /* return count for averaging */
+  //
+  ////monte_carlo_blackjack(Q, P, R, episodes);
 
+  //double V[S0][S1][S2]; zero_double_3d(V); /* state values */
   /* Save V to file */
   // int iii = 1;
   // FILE* f = fopen("V.dat", "w");

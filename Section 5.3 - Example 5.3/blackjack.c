@@ -66,7 +66,7 @@ int hand_calculate_value(hand* h) {
   return 0;
 }
 
-void hand_bust(hand* h) {
+player hand_bust(hand* h) {
   h->bust = 1;
   player winner = DEALER;
   switch (h->id) {
@@ -74,7 +74,11 @@ void hand_bust(hand* h) {
       winner = AGENT;
       break;
     case AGENT:
+    case USER:
       winner = DEALER;
+      break;
+    case DRAW:
+      winner = DRAW;
       break;
   }
 
@@ -82,7 +86,7 @@ void hand_bust(hand* h) {
   curses_end_game(winner); /* Remove this functionality for now */
   #endif
   
-  return;
+  return winner;
 }
 
 void hand_reset(hand* h) {
@@ -227,6 +231,8 @@ void curses_end_game(player who_won) {
       curses_row = 2;
       break;
     case AGENT:
+    case USER:
+    case DRAW:
       agent_wins++;
       curses_row = 1;
       break;

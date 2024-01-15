@@ -4,7 +4,7 @@ WFLAGS=-Wall -Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition -We
 CFLAGS=-D_POSIX_C_SOURCE=199309L
 LDFLAGS=-lm -lcurses
 PROGRAM=main
-PFLAGS=-pg -g # Profiler flags
+PFLAGS=-g # Profiler flags
 SRC=$(wildcard *.c)
 OBJ=$(patsubst %.c, %.o, $(SRC))
 

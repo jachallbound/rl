@@ -8,7 +8,7 @@
 
 /* Macros */
 #define DECK_SIZE 52
-#define HAND_SIZE 8
+#define HAND_SIZE 20
 #define UNIQUE_CARDS 13
 #define HAND_BUST_ENDS_GAME 0
 
@@ -59,7 +59,7 @@ int hand_calculate_value(hand* h);
 int hand_dealer_decision(hand* dealer);
 blackjack_action hand_dealer_plays(hand* dealer);
 void hand_reset(hand* h);
-void hand_bust(hand* h);
+player hand_bust(hand* h);
 player hand_decide_winner(hand* agent, hand* dealer);
 int hand_has_usable_ace(hand* h);
 int hand_value_before_busting(hand* h);
