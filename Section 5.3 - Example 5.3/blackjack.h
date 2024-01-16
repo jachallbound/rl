@@ -26,8 +26,8 @@ extern int agent_wins;
 extern int dealer_wins;
 
 typedef enum blackjack_action {
-  HIT,
-  STICK
+  STICK = 1,
+  HIT = 0
 } blackjack_action;
 
 typedef enum player {

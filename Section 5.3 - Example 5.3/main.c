@@ -41,8 +41,7 @@ int dealer_wins = 0;
 /* Main */
 int main (int argc, char** argv) {
   /* Get number of episodes from commandline parameter */
-  int episodes = 1000; /* default */
-  if (argc > 1) episodes = atoi(argv[1]); /* user defined */
+  int episodes = 500000; /* default */
 
   /* Set random seed */
   srand(time(NULL));
@@ -54,7 +53,7 @@ int main (int argc, char** argv) {
   /* 1: train agent as described in Example 5.1 */
   #if TRAIN_AGENT_OR_PLAY_BLACKJACK
     /* Initialize matrices */
-    /* Volk arrays on heap */
+    /* Volk arrays */
     unsigned int alignment = volk_get_alignment(); /* required */
     double* Q = (double*)volk_malloc(sizeof(double)*(S0*S1*S2*A0), alignment); /* 4d array */
     double* R = (double*)volk_malloc(sizeof(double)*(S0*S1*S2*A0), alignment); /* 4d array */
@@ -66,13 +65,26 @@ int main (int argc, char** argv) {
       Q[i] = 0.0f;
       R[i] = 1.0f;
       if (i < S0*S1*S2) { /* only 3d */
-        P[i] = 0.0f;
+        P[i] = (double)uniform_decision(1); /* random policy */
         V[i] = 0.0f;
       }
     }
 
     /* Mont carlo simulation */
     monte_carlo_blackjack(Q, R, P, V, episodes);
+
+    /* Save P and V to file */
+    FILE* fp = fopen("P.dat", "w");
+    FILE* fv = fopen("V.dat", "w");
+    int s2 = 1; /* 1: usable ace, 0: no usable ace */
+    for (int s0 = 0; s0 < S0; s0++) {
+      for (int s1 = 0; s1 < S1; s1++) {
+        fprintf(fp, "%d ", (int)get_volk_3d(P, s0, s1, s2, S0*S1*S2));
+        fprintf(fv, "%2.2f ", get_volk_3d(V, s0, s1, s2, S0*S1*S2));
+      }
+      fprintf(fp, "\n");
+      fprintf(fv, "\n");
+    }
 
   #else /* TRAIN_AGENT_OR_PLAY_BLACKJACK */
     /* 0: play blackjack */
@@ -130,7 +142,7 @@ int main (int argc, char** argv) {
 }
 
   void libvolkexample(void) {
-    /* arrays with libvolk */
+    /* example of using arrays with libvolk */
     unsigned int N = 10;
     unsigned int alignment = volk_get_alignment();
     double* increasing = (double*)volk_malloc(sizeof(double)*N, alignment);
@@ -160,12 +172,3 @@ int main (int argc, char** argv) {
 
     return;
   }
-
-
-
-
-    /* Static arrays on stack (causing stack smashing?) */
-    // double Q[S0][S1][S2][A0]; zero_double_4d(Q); /* action-state values */
-    // int    P[S0][S1][S2]; zero_int_3d(P); /* policy */
-    // int    R[S0][S1][S2][A0]; zero_int_4d(R); /* return count for averaging */
-    // double V[S0][S1][S2]; zero_double_3d(V); /* state values */
