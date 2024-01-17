@@ -39,7 +39,7 @@ int agent_wins = 0;
 int dealer_wins = 0;
 
 /* Main */
-int main (int argc, char** argv) {
+int main (void) {
   /* Get number of episodes from commandline parameter */
   int episodes = 500000; /* default */
 
@@ -85,6 +85,14 @@ int main (int argc, char** argv) {
       fprintf(fp, "\n");
       fprintf(fv, "\n");
     }
+    fclose(fp);
+    fclose(fv);
+
+    /* Free volk arrays */
+    volk_free(Q);
+    volk_free(R);
+    volk_free(P);
+    volk_free(V);
 
   #else /* TRAIN_AGENT_OR_PLAY_BLACKJACK */
     /* 0: play blackjack */
