@@ -12,6 +12,9 @@
 #include "volk_arrays.h"
 
 
+/* Global */
+extern int mc_debug;
+
 /* Functions */
 /* Mont carlo functions */
 void monte_carlo_blackjack(double* Q, double* R, double* P, double* V, int episodes);

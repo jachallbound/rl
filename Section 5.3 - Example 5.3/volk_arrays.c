@@ -7,10 +7,10 @@
 /* 2nd dimension length: S2 */
 /* 3rd dimension length: A0 */
 void set_volk_3d(double* array, double value, int i0, int i1, int i2, int len) {
-  int index_3d = i0*S1*S2 + i1*S2 + i2; /* first line of real code */
+  int index_3d = i0*S1*S2 + i1*S2 + i2;
 
   if (index_3d < len) {
-    array[index_3d] = value; /* second line of real code */
+    array[index_3d] = value;
   } else {
     fprintf(stderr, "(3d) Attempted write beyond array length: %d > %d\n", index_3d, len);
     exit(1);
@@ -19,10 +19,10 @@ void set_volk_3d(double* array, double value, int i0, int i1, int i2, int len) {
 }
 
 void set_volk_4d(double* array, double value, int i0, int i1, int i2, int i3, int len) {
-  int index_4d = i0*S1*S2*A0 + i1*S2*A0 + i2*A0 + i3; /* first line of real code */
+  int index_4d = i0*S1*S2*A0 + i1*S2*A0 + i2*A0 + i3;
 
   if (index_4d < len) {
-    array[index_4d] = value; /* second line of real code */
+    array[index_4d] = value;
   } else {
     fprintf(stderr, "(4d) Attempted write beyond array length: %d > %d\n", index_4d, len);
     exit(1);
@@ -31,10 +31,10 @@ void set_volk_4d(double* array, double value, int i0, int i1, int i2, int i3, in
 }
 
 double get_volk_3d(double* array, int i0, int i1, int i2, int len) {
-  int index_3d = i0*S1*S2 + i1*S2 + i2; /* first line of real code */
+  int index_3d = i0*S1*S2 + i1*S2 + i2;
 
   if (index_3d < len) {
-    return array[index_3d]; /* second line of real code */
+    return array[index_3d];
   } else {
     fprintf(stderr, "(3d) Attempted write beyond array length: %d > %d\n", index_3d, len);
     exit(1);
@@ -42,10 +42,10 @@ double get_volk_3d(double* array, int i0, int i1, int i2, int len) {
 }
 
 double get_volk_4d(double* array, int i0, int i1, int i2, int i3, int len) {
-  int index_4d = i0*S1*S2*A0 + i1*S2*A0 + i2*A0 + i3; /* first line of real code */
+  int index_4d = i0*S1*S2*A0 + i1*S2*A0 + i2*A0 + i3;
 
   if (index_4d < len) {
-    return array[index_4d]; /* second line of real code */
+    return array[index_4d];
   } else {
     fprintf(stderr, "(4d) Attempted write beyond array length: %d > %d\n", index_4d, len);
     exit(1);

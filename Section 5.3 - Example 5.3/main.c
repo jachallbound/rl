@@ -37,9 +37,13 @@ int dealt[52] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
                  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
 int agent_wins = 0;
 int dealer_wins = 0;
+int mc_debug = 0;
 
 /* Main */
-int main (void) {
+int main (int argc, char** argv) {
+  /* Control printf statements in monte_carlo_blackjack */
+  if (argc > 1) mc_debug = atoi(argv[1]);
+
   /* Get number of episodes from commandline parameter */
   int episodes = 500000; /* default */
 

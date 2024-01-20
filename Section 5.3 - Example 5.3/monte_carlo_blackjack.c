@@ -18,7 +18,7 @@ void monte_carlo_blackjack(double* Q, double* R, double* P, double* V, int episo
   /* First-visit Monte Carlo */
   for (int i = 0; i < episodes; i++) {
     /* display progress */
-    if (i%1000 == 0) printf("Episode: %4d | \n", i);
+    if (mc_debug) if (i%1000 == 0) printf("Episode: %4d | \n", i);
 
     /* Reset values */
     hand_reset(&agent);
