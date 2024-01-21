@@ -66,7 +66,7 @@ int uniform_decision(int len) {
   double d = 0, p = 0;
   d = (double)rand()/RAND_MAX;
   for (int i = 0; i < len; i++)
-    if (d > p && d < (p+=pi)) return i;
+    if ((d > p) && (d < (p+=pi))) return i;
 
   /* Should not reach here */
   return 0;

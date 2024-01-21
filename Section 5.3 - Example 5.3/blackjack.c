@@ -60,10 +60,10 @@ int hand_calculate_value(hand* h) {
     }
     if (h->value > 21) {
       hand_bust(h);
-      return 1;
+      return h->value;
     } else h->bust = 0;
   }
-  return 0;
+  return h->value;
 }
 
 player hand_bust(hand* h) {

@@ -19,7 +19,7 @@ Replot the state-value function (V*) as a heatmap to better understand it:
 
 ![](V_heatmap.png)
 
-The policy, however, is very different to that in the book.
+The policy, however, is different to that in the book.
 Legend: Stick is 1 (green), Hit is 0 (magenta):
 
 ![](Policy_heatmap.png)

@@ -45,7 +45,7 @@ int main (int argc, char** argv) {
   if (argc > 1) mc_debug = atoi(argv[1]);
 
   /* Get number of episodes from commandline parameter */
-  int episodes = 500000; /* default */
+  int episodes = 5000000; /* default */
 
   /* Set random seed */
   srand(time(NULL));
@@ -69,7 +69,7 @@ int main (int argc, char** argv) {
       Q[i] = 0.0f;
       R[i] = 1.0f;
       if (i < S0*S1*S2) { /* only 3d */
-        P[i] = (double)uniform_decision(1); /* random policy */
+        P[i] = uniform_decision(2); /* random policy */
         V[i] = 0.0f;
       }
     }

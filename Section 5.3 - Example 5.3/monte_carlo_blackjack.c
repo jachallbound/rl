@@ -29,11 +29,9 @@ void monte_carlo_blackjack(double* Q, double* R, double* P, double* V, int episo
     /* Deal two hands */
     hand_add_card(&agent);
     hand_add_card(&agent);
-    hand_calculate_value(&agent);
 
     hand_add_card(&dealer);
     hand_add_card(&dealer);
-    hand_calculate_value(&dealer);
 
     /* Dealer play until he decides to stick */
     hand_dealer_plays(&dealer);
@@ -43,14 +41,10 @@ void monte_carlo_blackjack(double* Q, double* R, double* P, double* V, int episo
     /* Hit until agent.value > 12 */
     while (agent.value < 12) {
       hand_add_card(&agent);
-      hand_calculate_value(&agent);
     }
 
-    /* Random first action */
-    a = (blackjack_action)uniform_decision(1); /* uniform decision between 0 and 1 */
-    while (a == HIT) {
-      hand_add_card(&agent); /* deal a card */
-      hand_calculate_value(&agent); /* calculate new hand value */
+    /* Play a hand */
+    do {
       /* If agent has busted, break */
       if (agent.bust) break;
       else { /* agent has not busted yet */
@@ -59,32 +53,45 @@ void monte_carlo_blackjack(double* Q, double* R, double* P, double* V, int episo
         i2 = hand_has_usable_ace(&agent); /* Check if Agent has usable ace */
         /* Get action from policy */
         a = (blackjack_action)get_volk_3d(P, i0, i1, i2, S0*S1*S2);
+        if (a == HIT) hand_add_card(&agent);
       }
-    }
-
+    } while (a == HIT);
+    
     /* Decide winner */
     winner = hand_decide_winner(&agent, &dealer);
 
-    /* Agent state, based off hand value before busting */
-    i0 = hand_value_before_busting(&agent) - 12; /* convert hand value to index 0-9 */
-    i2 = hand_has_usable_ace(&agent); /* check usable ace again, incase random `a` is STICK */
+    /* Reverse through hand that was just played */
+    do {
+      // printf("agent.L = %d, agent.value = %d \n", agent.L, agent.value);
+      if (agent.bust) {
+        i0 = hand_value_before_busting(&agent) - 12; /* convert hand value to index 0-9 */
+        agent.L--;
+      } else {
+        i0 = agent.value - 12;
+      }
+      a = (blackjack_action)get_volk_3d(P, i0, i1, i2, S0*S1*S2); /* get action at this state */
+      i2 = hand_has_usable_ace(&agent);
 
-    /* Update action-state-value */
-    set_volk_4d(Q, get_volk_4d(Q, i0, i1, i2, (int)a, S0*S1*S2*A0) + (double)winner, /* add to itself */
-                i0, i1, i2, (int)a, S0*S1*S2*A0); /* summation of all rewards at this action-state */
-    set_volk_4d(R, get_volk_4d(R, i0, i1, i2, (int)a, S0*S1*S2*A0) + 1.0f, /* increment by 1 */
-                i0, i1, i2, (int)a, S0*S1*S2*A0); /* visits to this action-state */
-    /* Choose action with higher value */
-    /* Qa: averaged action-state value */
-    Qa[0] = get_volk_4d(Q, i0, i1, i2, 0, S0*S1*S2*A0) / get_volk_4d(R, i0, i1, i2, 0, S0*S1*S2*A0);
-    Qa[1] = get_volk_4d(Q, i0, i1, i2, 1, S0*S1*S2*A0) / get_volk_4d(R, i0, i1, i2, 1, S0*S1*S2*A0);
-    Qa_argmax = argmax(Qa, 2);
+      /* Update action-state-value */
+      set_volk_4d(Q, get_volk_4d(Q, i0, i1, i2, (int)a, S0*S1*S2*A0) + (double)winner, /* add to itself */
+                  i0, i1, i2, (int)a, S0*S1*S2*A0); /* summation of all rewards at this action-state */
+      set_volk_4d(R, get_volk_4d(R, i0, i1, i2, (int)a, S0*S1*S2*A0) + 1.0f, /* increment by 1 */
+                  i0, i1, i2, (int)a, S0*S1*S2*A0); /* visits to this action-state */
+      /* Choose action with higher value */
+      /* Qa: averaged action-state value */
+      Qa[0] = get_volk_4d(Q, i0, i1, i2, 0, S0*S1*S2*A0) / get_volk_4d(R, i0, i1, i2, 0, S0*S1*S2*A0);
+      Qa[1] = get_volk_4d(Q, i0, i1, i2, 1, S0*S1*S2*A0) / get_volk_4d(R, i0, i1, i2, 1, S0*S1*S2*A0);
+      Qa_argmax = argmax(Qa, 2);
 
-    /* policy is argmax of both actions at current action state */
-    set_volk_3d(P, (double)Qa_argmax, i0, i1, i2, S0*S1*S2);
+      /* policy is argmax of both actions at current action state */
+      set_volk_3d(P, (double)Qa_argmax, i0, i1, i2, S0*S1*S2);
 
-    /* state value is action-state value at argmax of both actions */
-    set_volk_3d(V, Qa[Qa_argmax], i0, i1, i2, S0*S1*S2);
+      /* state value is action-state value at argmax of both actions */
+      set_volk_3d(V, Qa[Qa_argmax], i0, i1, i2, S0*S1*S2);
+
+      /* Decrement length of hand to get previous states */
+      agent.L--;
+    } while ((hand_calculate_value(&agent) > 11 && hand_calculate_value(&agent) < 22));
   }
 
   return;
