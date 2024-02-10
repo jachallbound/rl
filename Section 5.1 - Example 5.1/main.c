@@ -8,9 +8,6 @@
 #include "blackjack.h"
 #include "monte_carlo_blackjack.h"
 
-/* Macros */
-#define TRAIN_AGENT_OR_PLAY_BLACKJACK 1 /* 1: train agent, 0: play blackjack */
-
 /* Global */
 int len = 52;
 int deck_n[52] = {2,3,4,5,6,7,8,9,10,10,10,10,11,
@@ -40,9 +37,6 @@ int main (void) {
   int S[3] = {S0, S1, S2};
   int episodes = 500000; /* number of episodes */
 
-  /* 1: train agent as described in Example 5.1 */
-  #if TRAIN_AGENT_OR_PLAY_BLACKJACK
-
   /* Initialize states */
   int S_total = S[0]*S[1]*S[2];
   double V[S[0]][S[1]][S[2]]; zero_double_3d(V); /* state values */
@@ -60,59 +54,6 @@ int main (void) {
     fprintf(f, "\n");
   }
   fclose(f);
-
-
-  /* 0: play blackjack */
-  #else
-  /*** BEGIN CURSES ***/
-  WINDOW* wnd = initscr(); /* curses call to initialize window */
-  cbreak(); /* curses call to set no waiting for Enter key */
-  noecho(); /* curses call to set no echoing */
-  clear(); /* curses call to clear screen, send cursor to position (0,0) */
-  refresh(); /* curses call to implement all changes since last refresh */
-  curs_set(0); /* display cursor or not */
-  char c;
-  
-  hand agent;
-  agent.id = AGENT;
-  hand dealer;
-  dealer.id = DEALER;
-  do {
-    /* Reset values */
-    curses_reset_screen(wnd);
-    hand_reset(&agent);
-    hand_reset(&dealer);
-    player winner = DEALER;
-    deck_reset(); /* Reset deck */
-    /* Deal two hands */
-    hand_add_card(&agent);
-    hand_add_card(&agent);
-    hand_add_card(&dealer);
-    curses_update_hands(wnd, &agent, &dealer);
-    /* Get input and make decision to hit or stay */
-    do {
-      c = getch();
-      /* Type 'h' to hit */
-      if (c == 'h') {
-        if (hand_add_card(&agent)) goto end_hand;
-        // if (hand_calculate_value(&agent)) goto end_hand;
-        curses_update_hands(wnd, &agent, &dealer);
-      }
-    } while (c == 'h'); /* Type anything else to stay */
-    /* Deal second card to dealer */
-    hand_add_card(&dealer);
-    hand_calculate_value(&dealer);
-    hand_dealer_decision(&dealer);
-    /* Check who won */
-    end_hand:
-    curses_update_hands(wnd, &agent, &dealer);
-    winner = hand_decide_winner(&agent, &dealer);
-    /* Display results */
-    curses_end_game(winner);
-    getch();
-  } while (c != 'q');
-  endwin();
-  #endif /* TRAIN_AGENT_OR_PLAY_BLACKJACK */
 
   return 0;
 }
